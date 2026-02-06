@@ -86,4 +86,4 @@ Nanoprintf is by charlesnicholson.
 ## License
 SnowOS is under an BSD 3-Clause License.
 
-BlueSillyDragon (c) 2025
+BlueSillyDragon (c) 2025, 2026

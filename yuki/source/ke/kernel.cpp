@@ -47,7 +47,7 @@ extern "C" void KeMain(void* SnowBootInfo)
     KeRunConstructors();
 
     HalInit();
-    HalPrintString("Snow Operating System (c) 2025 BlueSillyDragon\n");
+    HalPrintString("Snow Operating System (c) 2025, 2026 BlueSillyDragon\n");
     KePrint(LOG_TYPE::None, "Yuki Kernel Version %d.%d.%d\n", YUKI_VERSION_MAJOR, YUKI_VERSION_MINOR, YUKI_VERSION_PATCH);
     KePrint(LOG_TYPE::None, "Booted by: ");
     

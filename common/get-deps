@@ -46,11 +46,6 @@ clone_repo_commit \
     cc-runtime \
     dae79833b57a01b9fd3e359ee31def69f5ae899b
 
-clone_repo_commit \
-    https://codeberg.org/Limine/limine-protocol.git \
-    include/limine-protocol \
-    b7d1c7c700a4f56b6709e40ec07c86f221173ee2
-
 touch .deps-obtained
 
 printf "\nDependencies obtained successfully.\n"
