@@ -48,6 +48,18 @@ volatile limine_framebuffer_request framebuffer_request = {
     .response = nullptr
 };
 
+volatile limine_memmap_request LimineMemoryMapRequest = {
+    .id = LIMINE_MEMMAP_REQUEST,
+    .revision = 0,
+    .response = nullptr
+};
+
+volatile limine_hhdm_request LimineHhdmRequest = {
+    .id = LIMINE_HHDM_REQUEST,
+    .revision = 0,
+    .response = nullptr
+};
+
 }
 
 // Finally, define the start and end markers for the Limine requests.
@@ -66,7 +78,7 @@ volatile LIMINE_REQUESTS_END_MARKER;
 struct flanterm_context* FtCtx;
 
 uint32_t TerminalForeground = 0xFFFFFF;
-uint32_t TerminalBackground = 0x23272E;
+uint32_t TerminalBackground = 0x0000AD;
 
 size_t strlen(const char *string) {
     size_t length = 0;
@@ -84,7 +96,7 @@ extern "C" void* IsrStubTable[];
 GDT Gdt {0, KERNEL_CS, KERNEL_DS, USER_CS, USER_DS};
 DTR GdtRegister;
 
-IDTENTRY Idt[256];
+IDT_ENTRY Idt[256];
 DTR Idtr;
 
 limine_framebuffer *Framebuffer;
@@ -101,7 +113,7 @@ extern "C" {
 
 
 void HalIdtSetDescriptor(uint8_t Vector, void* Isr, uint8_t Flags) {
-    IDTENTRY* Descriptor = &Idt[Vector];
+    IDT_ENTRY* Descriptor = &Idt[Vector];
 
     Descriptor->IsrLow              = (uint64_t)Isr & 0xFFFF;
     Descriptor->SegmentSelector     = 0x08;
@@ -167,11 +179,9 @@ void HalInitCpu()
     __asm__ volatile ("lgdt %0" :: "m"(GdtRegister));
     ReloadSegments();
 
-    KePrint(LOG_TYPE::HalLog, "GDT Initialized!\n");
-
     // Setup the IDT
     Idtr.Base = (uint64_t)&Idt;
-    Idtr.Limit = (uint16_t)sizeof(IDTENTRY) * 256 - 1;
+    Idtr.Limit = (uint16_t)sizeof(IDT_ENTRY) * 256 - 1;
 
     for(int i = 0; i < 40; i++)
     {
@@ -179,5 +189,16 @@ void HalInitCpu()
     }
 
     __asm__ volatile ("lidt %0" :: "m"(Idtr));
-    KePrint(LOG_TYPE::HalLog, "IDT Initialized!\n");
+    KePrint(LOG_TYPE::None, "Cpu Initialized!\n");
+}
+
+uint64_t HalRetrieveHhdmOffset()
+{
+    return LimineHhdmRequest.response->offset;
+}
+
+limine_memmap_response *HalRetrieveMemoryMap()
+{
+    limine_memmap_response *MemoryMap = LimineMemoryMapRequest.response;
+    return MemoryMap;
 }

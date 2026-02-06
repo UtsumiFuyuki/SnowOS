@@ -17,6 +17,7 @@ October 28th 2025
 #include <limine.h>
 #include <hal/hal.hpp>
 #include <ke/print.hpp>
+#include <mm/pmm.hpp>
 
 #define YUKI_VERSION_MAJOR 0
 #define YUKI_VERSION_MINOR 1
@@ -60,14 +61,13 @@ extern "C" void KeMain(void* SnowBootInfo)
         KePrint(LOG_TYPE::None, "SnowBoot\n");
     }
 
-    HalInitCpu();
+    MmInitializeFreelist(HalRetrieveMemoryMap());
 
-    KePrint(LOG_TYPE::KeLog, "This is a test! :3\n");
-    KePrint(LOG_TYPE::KeLog, "Test: %d, %x, %c\n", 13, 0xcafebabe, 's');
-
-    // Cause an exception
-    __asm__ volatile ("mov $0xcafebabe, %rcx; mov $0xdeadbeef, %rdx; xor %rax, %rax; xor %rbx, %rbx; div %rbx");
+    uint64_t *test = reinterpret_cast<uint64_t *>(MmAllocatePhysicalPage() + HalRetrieveHhdmOffset());
+    *test = 0xcafebabe;
+    KePrint(LOG_TYPE::None, "test holds: 0x%lX\n", *test);
+    MmFreePhysicalPage(reinterpret_cast<uintptr_t>(test) - HalRetrieveHhdmOffset());
 
     // We're done, just hang...
-    HalInitCpu();
+    HalHaltCpu();
 }

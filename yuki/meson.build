@@ -16,6 +16,7 @@ sources = files(
     'source/hal/isr.asm',
     'source/hal/flanterm/src/flanterm.c',
     'source/hal/flanterm/src/flanterm_backends/fb.c',
+    'source/mm/pmm.cpp',
 )
 
 add_project_arguments(

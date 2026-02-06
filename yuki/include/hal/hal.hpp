@@ -15,6 +15,7 @@ October 28th 2025
 
 #pragma once
 
+#include <cstdint>
 #include <limine.h>
 
 #define KERNEL_CS 0x00af9b000000ffff
@@ -47,9 +48,12 @@ typedef struct
     uint16_t IsrMid;
     uint32_t IsrHigh;
     uint32_t Reserved;
-} __attribute__((packed)) IDTENTRY;
+} __attribute__((packed)) IDT_ENTRY;
 
 void HalInit();
 void HalPrintString(const char* String);
 void HalHaltCpu();
 void HalInitCpu();
+uint64_t HalRetrieveHhdmOffset();
+
+limine_memmap_response *HalRetrieveMemoryMap();
