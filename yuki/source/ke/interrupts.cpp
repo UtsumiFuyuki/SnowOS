@@ -18,10 +18,21 @@ October 29th 2025
 
 typedef struct
 {
-    uint64_t Rdx;
-    uint64_t Rcx;
-    uint64_t Rbx;
     uint64_t Rax;
+    uint64_t Rbx;
+    uint64_t Rcx;
+    uint64_t Rdx;
+    uint64_t Rbp;
+    uint64_t Rdi;
+    uint64_t Rsi;
+    uint64_t R8;
+    uint64_t R9;
+    uint64_t R10;
+    uint64_t R11;
+    uint64_t R12;
+    uint64_t R13;
+    uint64_t R14;
+    uint64_t R15;
     uint64_t InterruptVector;
     uint64_t ErrorCode;
     uint64_t Rip;
@@ -71,17 +82,33 @@ __attribute__((noreturn)) extern "C" void KeInterruptHandler(InterruptFrame* Sta
             break;
     }
 
-    Ke::Print(LOG_TYPE::None, " Error Code: 0x%llX\nRSP: 0x%llX | RFLAGS: 0x%llX\nCS: 0x%llX | RIP: 0x%llX\n",
+    Ke::Print(LOG_TYPE::None, " Error Code: 0x%llX\n\nRSP: 0x%llX | RFLAGS: 0x%llX\nCS: 0x%llX | RIP: 0x%llX\n",
     StackFrame->ErrorCode,
     StackFrame->Rsp,
     StackFrame->Rflags,
     StackFrame->Cs,
     StackFrame->Rip);
-    Ke::Print(LOG_TYPE::None, "RAX: 0x%llX | RBX: 0x%llX\nRCX: 0x%llX | RDX: 0x%llX",
+
+    Ke::Print(LOG_TYPE::None, "RAX: 0x%llX | RBX: 0x%llX | RCX: 0x%llX | RDX: 0x%llX\n",
     StackFrame->Rax,
     StackFrame->Rbx,
     StackFrame->Rcx,
     StackFrame->Rdx);
+
+    Ke::Print(LOG_TYPE::None, "RBP: 0x%llX | RDI: 0x%llX | RSI: 0x%llX | R8: 0x%llX\n",
+    StackFrame->Rbp,
+    StackFrame->Rdi,
+    StackFrame->Rsi,
+    StackFrame->R8);
+
+    Ke::Print(LOG_TYPE::None, "R9: 0x%llX | R10: 0x%llX | R11: 0x%llX | R12: 0x%llX | R13: 0x%llX | R14: 0x%llX | R15: 0x%llX\n",
+    StackFrame->R9,
+    StackFrame->R10,
+    StackFrame->R11,
+    StackFrame->R12,
+    StackFrame->R13,
+    StackFrame->R14,
+    StackFrame->R15);
     for (;;)
     {
         __asm__ volatile (" hlt ");

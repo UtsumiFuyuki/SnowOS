@@ -86,9 +86,7 @@ uintptr_t Mm::AllocatePhysicalPage()
     {
         FreelistHead = *FreelistHead.Next;
     }
-
-    Ke::Print(LOG_TYPE::None, "Physical Page at 0x%lX allocated!\n", Address);
-
+    
     return Address;
 }
 
@@ -100,5 +98,4 @@ void Mm::FreePhysicalPage(uintptr_t Page)
     NewNode->Start = Page;
     NewNode->Length = 0x1000;
     FreelistHead = *NewNode;
-    Ke::Print(LOG_TYPE::None, "New Freelist Entry Created!\n");
 }

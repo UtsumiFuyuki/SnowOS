@@ -61,12 +61,23 @@ extern "C" void KeMain(void* SnowBootInfo)
         Ke::Print(LOG_TYPE::None, "SnowBoot\n");
     }
 
+    Hal::InitCpu();
+
     Mm::InitializeFreelist(Hal::RetrieveMemoryMap());
 
-    uint64_t *Test = reinterpret_cast<uint64_t *>(Mm::AllocatePhysicalPage() + Hal::RetrieveHhdmOffset());
-    *Test = 0xcafebabe;
-    Ke::Print(LOG_TYPE::None, "Test holds: 0x%lX\n", *Test);
-    Mm::FreePhysicalPage(reinterpret_cast<uintptr_t>(Test) - Hal::RetrieveHhdmOffset());
+    uint64_t Test[100];
+
+    for (size_t i = 0; i < 100; i++)
+    {
+        Test[i] = Mm::AllocatePhysicalPage();
+    }
+
+    for (size_t i = 100; i > 0; i--)
+    {
+        Mm::FreePhysicalPage(Test[i]);
+    }
+
+    __asm__ volatile ("mov $0xcafebabe, %rcx; mov $0xdeadbeef, %rdx; xor %rax, %rax; xor %rbx, %rbx; div %rbx");
 
     // We're done, just hang...
     Hal::HaltCpu();
