@@ -1,6 +1,6 @@
 /**
 Snow Operating System
-Copyright (c) BlueSillyDragon 2025
+Copyright (c) UtsumiFuyuki 2025
  
 File: ke/kernel.cpp
 
@@ -9,7 +9,7 @@ This file is the core source file of
 the Ke module of Yuki
 
 Author:
-BlueSillyDragon
+UtsumiFuyuki
 October 28th 2025
 **/
 
@@ -47,27 +47,27 @@ extern "C" void KeMain(void* SnowBootInfo)
 {
     KeRunConstructors();
 
-    HalInit();
-    HalPrintString("Snow Operating System (c) 2025, 2026 BlueSillyDragon\n");
-    KePrint(LOG_TYPE::None, "Yuki Kernel Version %d.%d.%d\n", YUKI_VERSION_MAJOR, YUKI_VERSION_MINOR, YUKI_VERSION_PATCH);
-    KePrint(LOG_TYPE::None, "Booted by: ");
+    Hal::Init();
+    Hal::PrintString("Snow Operating System (c) 2025, 2026 UtsumiFuyuki\n");
+    Ke::Print(LOG_TYPE::None, "Yuki Kernel Version %d.%d.%d\n", YUKI_VERSION_MAJOR, YUKI_VERSION_MINOR, YUKI_VERSION_PATCH);
+    Ke::Print(LOG_TYPE::None, "Booted by: ");
     
     if (SnowBootInfo == nullptr)
     {
-        KePrint(LOG_TYPE::None, "Limine\n\n");
+        Ke::Print(LOG_TYPE::None, "Limine\n\n");
     }
     else
     {
-        KePrint(LOG_TYPE::None, "SnowBoot\n");
+        Ke::Print(LOG_TYPE::None, "SnowBoot\n");
     }
 
-    MmInitializeFreelist(HalRetrieveMemoryMap());
+    Mm::InitializeFreelist(Hal::RetrieveMemoryMap());
 
-    uint64_t *test = reinterpret_cast<uint64_t *>(MmAllocatePhysicalPage() + HalRetrieveHhdmOffset());
-    *test = 0xcafebabe;
-    KePrint(LOG_TYPE::None, "test holds: 0x%lX\n", *test);
-    MmFreePhysicalPage(reinterpret_cast<uintptr_t>(test) - HalRetrieveHhdmOffset());
+    uint64_t *Test = reinterpret_cast<uint64_t *>(Mm::AllocatePhysicalPage() + Hal::RetrieveHhdmOffset());
+    *Test = 0xcafebabe;
+    Ke::Print(LOG_TYPE::None, "Test holds: 0x%lX\n", *Test);
+    Mm::FreePhysicalPage(reinterpret_cast<uintptr_t>(Test) - Hal::RetrieveHhdmOffset());
 
     // We're done, just hang...
-    HalHaltCpu();
+    Hal::HaltCpu();
 }

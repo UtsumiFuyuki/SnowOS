@@ -84,6 +84,6 @@ The Limine Bootloader, as well as flanterm, is maintained by mintsuki.
 Nanoprintf is by charlesnicholson.
 
 ## License
-SnowOS is under an BSD 3-Clause License.
+SnowOS is under an GPLv3 License.
 
 BlueSillyDragon (c) 2025, 2026

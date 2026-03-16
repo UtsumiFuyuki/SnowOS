@@ -1,6 +1,6 @@
 /**
 Snow Operating System
-Copyright (c) BlueSillyDragon 2025
+Copyright (c) UtsumiFuyuki 2025
  
 File: ke/string.hpp
 
@@ -9,7 +9,7 @@ This file contains some function prototypes
 and defines for the logger
 
 Author:
-BlueSillyDragon
+UtsumiFuyuki
 October 30th 2025
 **/
 
@@ -37,4 +37,7 @@ October 30th 2025
 
 enum class LOG_TYPE {None, KeLog, HalLog};
 
-void KePrint(LOG_TYPE LogType, const char* String, ...);
+namespace Ke
+{
+void Print(LOG_TYPE LogType, const char* String, ...);
+}

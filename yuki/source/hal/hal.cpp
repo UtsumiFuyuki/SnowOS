@@ -1,6 +1,6 @@
 /**
 Snow Operating System
-Copyright (c) BlueSillyDragon 2025
+Copyright (c) UtsumiFuyuki 2025
  
 File: hal/hal.cpp
 
@@ -9,7 +9,7 @@ This file is the main source file of
 Hardware Abstraction Layer module of Yuki
 
 Author:
-BlueSillyDragon
+UtsumiFuyuki
 October 28th 2025
 **/
 
@@ -107,10 +107,9 @@ limine_framebuffer *Framebuffer;
 // but should not be removed, unless you know what you are doing.
 extern "C" {
     int __cxa_atexit(void (*)(void *), void *, void *) { return 0; }
-    void __cxa_pure_virtual() { HalHaltCpu(); }
+    void __cxa_pure_virtual() { Hal::HaltCpu(); }
     void *__dso_handle;
 }
-
 
 void HalIdtSetDescriptor(uint8_t Vector, void* Isr, uint8_t Flags) {
     IDT_ENTRY* Descriptor = &Idt[Vector];
@@ -124,17 +123,17 @@ void HalIdtSetDescriptor(uint8_t Vector, void* Isr, uint8_t Flags) {
     Descriptor->Reserved            = 0;
 }
 
-void HalInit()
+void Hal::Init()
 {
     // Ensure the bootloader actually understands our base revision (see spec).
     if (LIMINE_BASE_REVISION_SUPPORTED == false) {
-        HalHaltCpu();
+        Hal::HaltCpu();
     }
 
     // Ensure we got a framebuffer.
     if (framebuffer_request.response == nullptr
      || framebuffer_request.response->framebuffer_count < 1) {
-        HalHaltCpu();
+        Hal::HaltCpu();
     }
 
     // Fetch the first framebuffer.
@@ -157,12 +156,12 @@ void HalInit()
     );
 }
 
-void HalPrintString(const char* String)
+void Hal::PrintString(const char* String)
 {
     flanterm_write(FtCtx, String, strlen(String));
 }
 
-void HalHaltCpu()
+void Hal::HaltCpu()
 {
     for (;;)
     {
@@ -170,7 +169,7 @@ void HalHaltCpu()
     }
 }
 
-void HalInitCpu()
+void Hal::InitCpu()
 {
     // Setup the GDT
     GdtRegister.Base = reinterpret_cast<uint64_t>(&Gdt);
@@ -189,15 +188,15 @@ void HalInitCpu()
     }
 
     __asm__ volatile ("lidt %0" :: "m"(Idtr));
-    KePrint(LOG_TYPE::None, "Cpu Initialized!\n");
+    Ke::Print(LOG_TYPE::None, "Cpu Initialized!\n");
 }
 
-uint64_t HalRetrieveHhdmOffset()
+uint64_t Hal::RetrieveHhdmOffset()
 {
     return LimineHhdmRequest.response->offset;
 }
 
-limine_memmap_response *HalRetrieveMemoryMap()
+limine_memmap_response *Hal::RetrieveMemoryMap()
 {
     limine_memmap_response *MemoryMap = LimineMemoryMapRequest.response;
     return MemoryMap;

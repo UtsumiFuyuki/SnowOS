@@ -1,6 +1,6 @@
 /**
 Snow Operating System
-Copyright (c) BlueSillyDragon 2025, 2026
+Copyright (c) UtsumiFuyuki 2025, 2026
  
 File: mm/pmm.cpp
 
@@ -9,7 +9,7 @@ This file contains the main physical
 memory allocation code
 
 Author:
-BlueSillyDragon
+UtsumiFuyuki
 February 5th 2026 
 **/
 
@@ -22,7 +22,7 @@ February 5th 2026
 
 FREELIST_NODE FreelistHead = {.Start = 0, .Length = 0, .Next = nullptr};
 
-void MmInitializeFreelist(limine_memmap_response *MemoryMap)
+void Mm::InitializeFreelist(limine_memmap_response *MemoryMap)
 {
     uint64_t NumberOfPages = 0;
 
@@ -33,7 +33,7 @@ void MmInitializeFreelist(limine_memmap_response *MemoryMap)
 
     if (MemoryMap == nullptr)
     {
-        KePrint(LOG_TYPE::None, "MemoryMap passed to MmInitializeFreelist is NULL!\n");
+        Ke::Print(LOG_TYPE::None, "MemoryMap passed to MmInitializeFreelist is NULL!\n");
     }
 
     for (uint64_t i = 0; i < MemoryMap->entry_count; i++)
@@ -49,7 +49,7 @@ void MmInitializeFreelist(limine_memmap_response *MemoryMap)
             {
                 if (MemoryMap->entries[j]->type == LIMINE_MEMMAP_USABLE)
                 {
-                    NextNode = reinterpret_cast<FREELIST_NODE *>(MemoryMap->entries[j]->base + HalRetrieveHhdmOffset());
+                    NextNode = reinterpret_cast<FREELIST_NODE *>(MemoryMap->entries[j]->base + Hal::RetrieveHhdmOffset());
                     memset(NextNode, 0, 0x1000);
                     EndOfMemory = false;
                     break;
@@ -72,10 +72,10 @@ void MmInitializeFreelist(limine_memmap_response *MemoryMap)
         }
     }
 
-    KePrint(LOG_TYPE::None, "Usable System Memory Detected: %luMiB\n", ((NumberOfPages * 4) / 1024));
+    Ke::Print(LOG_TYPE::None, "Usable System Memory Detected: %luMiB\n", ((NumberOfPages * 4) / 1024));
 }
 
-uintptr_t MmAllocatePhysicalPage()
+uintptr_t Mm::AllocatePhysicalPage()
 {
     uintptr_t Address = FreelistHead.Start;
 
@@ -87,18 +87,18 @@ uintptr_t MmAllocatePhysicalPage()
         FreelistHead = *FreelistHead.Next;
     }
 
-    KePrint(LOG_TYPE::None, "Physical Page at 0x%lX allocated!\n", Address);
+    Ke::Print(LOG_TYPE::None, "Physical Page at 0x%lX allocated!\n", Address);
 
     return Address;
 }
 
-void MmFreePhysicalPage(uintptr_t Page)
+void Mm::FreePhysicalPage(uintptr_t Page)
 {
-    FREELIST_NODE *NewNode = reinterpret_cast<FREELIST_NODE *>(Page + HalRetrieveHhdmOffset());
+    FREELIST_NODE *NewNode = reinterpret_cast<FREELIST_NODE *>(Page + Hal::RetrieveHhdmOffset());
     memset(NewNode, 0, 0x1000);
     NewNode->Next = &FreelistHead;
     NewNode->Start = Page;
     NewNode->Length = 0x1000;
     FreelistHead = *NewNode;
-    KePrint(LOG_TYPE::None, "New Freelist Entry Created!\n");
+    Ke::Print(LOG_TYPE::None, "New Freelist Entry Created!\n");
 }

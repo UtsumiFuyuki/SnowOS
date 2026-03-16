@@ -1,6 +1,6 @@
 /**
 Snow Operating System
-Copyright (c) BlueSillyDragon 2025
+Copyright (c) UtsumiFuyuki 2025
  
 File: ke/string.hpp
 
@@ -10,7 +10,7 @@ prototypes for some of the functions from
 the string library
 
 Author:
-BlueSillyDragon
+UtsumiFuyuki
 October 30th 2025
 **/
 

@@ -1,6 +1,6 @@
 /**
 Snow Operating System
-Copyright (c) BlueSillyDragon 2025, 2026
+Copyright (c) UtsumiFuyuki 2025, 2026
  
 File: mm/pmm.hpp
 
@@ -10,7 +10,7 @@ and data structures for the
 physical memory manager
 
 Author:
-BlueSillyDragon
+UtsumiFuyuki
 February 5th 2026 
 **/
 
@@ -26,6 +26,9 @@ typedef struct FREELIST_NODE
     FREELIST_NODE *Next;
 } __attribute__((packed)) FREELIST_NODE;
 
-void MmInitializeFreelist(limine_memmap_response *MemoryMap);
-uintptr_t MmAllocatePhysicalPage();
-void MmFreePhysicalPage(uint64_t Page);
+namespace Mm
+{
+void InitializeFreelist(limine_memmap_response *MemoryMap);
+uintptr_t AllocatePhysicalPage();
+void FreePhysicalPage(uint64_t Page);
+}

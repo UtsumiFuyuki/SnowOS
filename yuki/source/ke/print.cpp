@@ -1,6 +1,6 @@
 /**
 Snow Operating System
-Copyright (c) BlueSillyDragon 2025
+Copyright (c) UtsumiFuyuki 2025
  
 File: ke/print.cpp
 
@@ -9,7 +9,7 @@ This file contains the logging
 functions for Yuki
 
 Author:
-BlueSillyDragon
+UtsumiFuyuki
 October 30th 2025
 **/
 
@@ -33,13 +33,7 @@ October 30th 2025
 char Buffer[512];
 int Index = 0;
 
-void KePutCharacter(int Character, void *Context) {
-    char Char = Character;
-    Buffer[Index] = Char;
-    Index++;
-}
-
-void KePrint(LOG_TYPE LogType, const char *String, ...)
+void Ke::Print(LOG_TYPE LogType, const char *String, ...)
 {
     va_list Arguments;
     va_start(Arguments, String);
@@ -47,18 +41,18 @@ void KePrint(LOG_TYPE LogType, const char *String, ...)
     switch (LogType)
     {
         case (LOG_TYPE::KeLog):
-            HalPrintString("[" ANSI_BRIGHT_CYAN "Ke" ANSI_RESET "] ");
+            Hal::PrintString("[" ANSI_BRIGHT_CYAN "Ke" ANSI_RESET "] ");
             break;
         case (LOG_TYPE::HalLog):
-            HalPrintString("[" ANSI_BLUE "Hal" ANSI_RESET "] ");
+            Hal::PrintString("[" ANSI_BLUE "Hal" ANSI_RESET "] ");
             break;
         case (LOG_TYPE::None):
             break;
     }
 
-    npf_vpprintf(KePutCharacter, nullptr, String, Arguments);
+    npf_vsnprintf(Buffer, sizeof(Buffer), String, Arguments);
 
-    HalPrintString(Buffer);
+    Hal::PrintString(Buffer);
 
     va_end(Arguments);
 

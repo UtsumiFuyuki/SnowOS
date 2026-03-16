@@ -1,6 +1,6 @@
 ;
 ;Snow Operating System
-;Copyright (c) BlueSillyDragon 2025
+;Copyright (c) UtsumiFuyuki 2025
  
 ;File: hal/isr.asm
 
@@ -9,7 +9,7 @@
 ;Interrupt Descriptor Table
 
 ;Author:
-;BlueSillyDragon
+;UtsumiFuyuki
 ;October 28th 2025
 ;
 

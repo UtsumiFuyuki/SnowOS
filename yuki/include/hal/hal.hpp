@@ -1,6 +1,6 @@
 /**
 Snow Operating System
-Copyright (c) BlueSillyDragon 2025
+Copyright (c) UtsumiFuyuki 2025
  
 File: hal/hal.hpp
 
@@ -9,7 +9,7 @@ This file contain architecture specific
 structures and definitions for Hal
 
 Author:
-BlueSillyDragon
+UtsumiFuyuki
 October 28th 2025
 **/
 
@@ -50,10 +50,13 @@ typedef struct
     uint32_t Reserved;
 } __attribute__((packed)) IDT_ENTRY;
 
-void HalInit();
-void HalPrintString(const char* String);
-void HalHaltCpu();
-void HalInitCpu();
-uint64_t HalRetrieveHhdmOffset();
+namespace Hal
+{
+void Init();
+void PrintString(const char* String);
+void HaltCpu();
+void InitCpu();
+uint64_t RetrieveHhdmOffset();
 
-limine_memmap_response *HalRetrieveMemoryMap();
+limine_memmap_response *RetrieveMemoryMap();
+}
