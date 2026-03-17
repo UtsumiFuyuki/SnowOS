@@ -13,6 +13,7 @@ UtsumiFuyuki
 October 28th 2025
 **/
 
+#include "hal/serial.hpp"
 #include <cstdint>
 #include <cstddef>
 #include <limine.h>
@@ -154,11 +155,14 @@ void Hal::Init()
         0, 0,
         0
     );
+
+    Hal::InitializeSerial(COM1);
 }
 
 void Hal::PrintString(const char* String)
 {
     flanterm_write(FtCtx, String, strlen(String));
+    Hal::WriteStringToSerial(COM1, String);
 }
 
 void Hal::HaltCpu()

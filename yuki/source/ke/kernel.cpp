@@ -16,6 +16,7 @@ October 28th 2025
 #include <cstdint>
 #include <limine.h>
 #include <hal/hal.hpp>
+#include <hal/serial.hpp>
 #include <ke/print.hpp>
 #include <mm/pmm.hpp>
 
@@ -38,10 +39,6 @@ extern "C" void KeRunConstructors() {
 		(*p)();
 	}
 }
-
-// The following will be our kernel's entry point.
-// If renaming kmain() to something else, make sure to change the
-// linker script accordingly.
 
 extern "C" void KeMain(void* SnowBootInfo)
 {
@@ -77,7 +74,11 @@ extern "C" void KeMain(void* SnowBootInfo)
         Mm::FreePhysicalPage(Test[i]);
     }
 
-    __asm__ volatile ("mov $0xcafebabe, %rcx; mov $0xdeadbeef, %rdx; xor %rax, %rax; xor %rbx, %rbx; div %rbx");
+    Hal::WriteStringToSerial(COM1, "This is a test :3\n");
+
+   // __asm__ volatile ("mov $0xcafebabe, %rcx; mov $0xdeadbeef, %rdx; xor %rax, %rax; xor %rbx, %rbx; div %rbx");
+
+   Ke::Print(LOG_TYPE::None, "Done!\n");
 
     // We're done, just hang...
     Hal::HaltCpu();
