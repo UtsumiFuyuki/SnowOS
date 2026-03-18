@@ -10,14 +10,14 @@ sources = files(
     'source/ke/kernel.cpp',
     'source/ke/interrupts.cpp',
     'source/ke/string.cpp',
-    'source/ke/print.cpp',
+    'source/ke/log.cpp',
     'source/hal/hal.cpp',
     'source/hal/gdt.asm',
     'source/hal/isr.asm',
     'source/hal/flanterm/src/flanterm.c',
     'source/hal/flanterm/src/flanterm_backends/fb.c',
     'source/hal/serial.cpp',
-    'source/mm/pmm.cpp',
+    'source/mm/freelist.cpp',
 )
 
 add_project_arguments(

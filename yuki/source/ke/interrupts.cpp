@@ -15,7 +15,7 @@ October 29th 2025
 
 #include <typedefs.hpp>
 #include <hal/hal.hpp>
-#include <ke/print.hpp>
+#include <ke/log.hpp>
 
 typedef struct
 {
@@ -44,65 +44,65 @@ typedef struct
 
 __attribute__((noreturn)) extern "C" VOID KeInterruptHandler(InterruptFrame* StackFrame)
 {
-    Ke::Print(LOG_TYPE::None, "\n" ANSI_BRIGHT_RED "Kernel Panic!!!\n");
-    Ke::Print(LOG_TYPE::None, "Stack Frame at: 0x%llX\n\n", StackFrame);
+    Ke::Print("\n" ANSI_BRIGHT_RED "Kernel Panic!!!\n");
+    Ke::Print("Stack Frame at: 0x%llX\n\n", StackFrame);
 
-    Ke::Print(LOG_TYPE::None, "Exception: ");
+    Ke::Print("Exception: ");
 
     switch(StackFrame->InterruptVector)
     {
         case (0x0):
-            Ke::Print(LOG_TYPE::None, "Division Error!");
+            Ke::Print("Division Error!");
             break;
         case (0x1):
-            Ke::Print(LOG_TYPE::None, "Debug Interrupt!");
+            Ke::Print("Debug Interrupt!");
             break;
         case (0x2):
-            Ke::Print(LOG_TYPE::None, "Non-maskable Interrupt!");
+            Ke::Print("Non-maskable Interrupt!");
             break;
         case (0x3):
-            Ke::Print(LOG_TYPE::None, "Breakpoint!");
+            Ke::Print("Breakpoint!");
             break;
         case (0x4):
-            Ke::Print(LOG_TYPE::None, "Overflow!");
+            Ke::Print("Overflow!");
             break;
         case (0x5):
-            Ke::Print(LOG_TYPE::None, "Bound Range Exceeded!");
+            Ke::Print("Bound Range Exceeded!");
             break;
         case (0x6):
-            Ke::Print(LOG_TYPE::None, "Invalid Opcode!");
+            Ke::Print("Invalid Opcode!");
             break;
         case (0x7):
-            Ke::Print(LOG_TYPE::None, "Device not Available!");
+            Ke::Print("Device not Available!");
             break;
         case (0xD):
-            Ke::Print(LOG_TYPE::None, "General Protection Fault!");
+            Ke::Print("General Protection Fault!");
             break;
         case (0xE):
-            Ke::Print(LOG_TYPE::None, "Page Fault!");
+            Ke::Print("Page Fault!");
             break;
     }
 
-    Ke::Print(LOG_TYPE::None, " Error Code: 0x%llX\n\nRSP: 0x%llX | RFLAGS: 0x%llX\nCS: 0x%llX | RIP: 0x%llX\n",
+    Ke::Print(" Error Code: 0x%llX\n\nRSP: 0x%llX | RFLAGS: 0x%llX\nCS: 0x%llX | RIP: 0x%llX\n",
     StackFrame->ErrorCode,
     StackFrame->Rsp,
     StackFrame->Rflags,
     StackFrame->Cs,
     StackFrame->Rip);
 
-    Ke::Print(LOG_TYPE::None, "RAX: 0x%llX | RBX: 0x%llX | RCX: 0x%llX | RDX: 0x%llX\n",
+    Ke::Print("RAX: 0x%llX | RBX: 0x%llX | RCX: 0x%llX | RDX: 0x%llX\n",
     StackFrame->Rax,
     StackFrame->Rbx,
     StackFrame->Rcx,
     StackFrame->Rdx);
 
-    Ke::Print(LOG_TYPE::None, "RBP: 0x%llX | RDI: 0x%llX | RSI: 0x%llX | R8: 0x%llX\n",
+    Ke::Print("RBP: 0x%llX | RDI: 0x%llX | RSI: 0x%llX | R8: 0x%llX\n",
     StackFrame->Rbp,
     StackFrame->Rdi,
     StackFrame->Rsi,
     StackFrame->R8);
 
-    Ke::Print(LOG_TYPE::None, "R9: 0x%llX | R10: 0x%llX | R11: 0x%llX | R12: 0x%llX | R13: 0x%llX | R14: 0x%llX | R15: 0x%llX\n",
+    Ke::Print("R9: 0x%llX | R10: 0x%llX | R11: 0x%llX | R12: 0x%llX | R13: 0x%llX | R14: 0x%llX | R15: 0x%llX\n",
     StackFrame->R9,
     StackFrame->R10,
     StackFrame->R11,

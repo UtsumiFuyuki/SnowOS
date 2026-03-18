@@ -17,7 +17,7 @@ October 28th 2025
 #include <limine.h>
 #include <hal/hal.hpp>
 #include <hal/serial.hpp>
-#include <ke/print.hpp>
+#include <ke/log.hpp>
 #include <mm/freelist.hpp>
 
 #define YUKI_VERSION_MAJOR 0
@@ -46,16 +46,16 @@ extern "C" VOID KeMain(LPVOID SnowBootInfo)
 
     Hal::Init();
     Hal::PrintString("Snow Operating System (c) 2025, 2026 UtsumiFuyuki\n");
-    Ke::Print(LOG_TYPE::None, "Yuki Kernel Version %d.%d.%d\n", YUKI_VERSION_MAJOR, YUKI_VERSION_MINOR, YUKI_VERSION_PATCH);
-    Ke::Print(LOG_TYPE::None, "Booted by: ");
+    Ke::Print("Yuki Kernel Version %d.%d.%d\n", YUKI_VERSION_MAJOR, YUKI_VERSION_MINOR, YUKI_VERSION_PATCH);
+    Ke::Print("Booted by: ");
     
     if (SnowBootInfo == nullptr)
     {
-        Ke::Print(LOG_TYPE::None, "Limine\n\n");
+        Ke::Print("Limine\n\n");
     }
     else
     {
-        Ke::Print(LOG_TYPE::None, "SnowBoot\n");
+        Ke::Print("SnowBoot\n");
     }
 
     Hal::InitCpu();
@@ -74,11 +74,10 @@ extern "C" VOID KeMain(LPVOID SnowBootInfo)
         Mm::FreePhysicalPage(Test[i]);
     }
 
-    Hal::WriteStringToSerial(COM1, "This is a test :3\n");
-
    // __asm__ volatile ("mov $0xcafebabe, %rcx; mov $0xdeadbeef, %rdx; xor %rax, %rax; xor %rbx, %rbx; div %rbx");
 
-   Ke::Print(LOG_TYPE::None, "Nothing more to do, halting...\r\n");
+   Ke::Print("Nothing more to do, halting...\r\n");
+   Ke::Log(__FILE__, "Reached end of KeMain!\r\n");
 
     // We're done, just hang...
     Hal::HaltCpu();

@@ -37,9 +37,8 @@ October 30th 2025
 #define ANSI_BRIGHT_CYAN    "\033[96m"
 #define ANSI_BRIGHT_WHITE   "\033[97m"
 
-enum class LOG_TYPE {None, KeLog, HalLog};
-
 namespace Ke
 {
-VOID Print(LOG_TYPE LogType, LPCSTR String, ...);
+VOID Log(LPCSTR File, LPCSTR String, ...);
+VOID Print(LPCSTR String, ...);
 }

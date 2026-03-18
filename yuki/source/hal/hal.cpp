@@ -21,7 +21,7 @@ October 28th 2025
 #include <hal/hal.hpp>
 #include <hal/serial.hpp>
 #include <ke/string.hpp>
-#include <ke/print.hpp>
+#include <ke/log.hpp>
 
 // Limine Stuff
 
@@ -183,7 +183,7 @@ VOID Hal::InitCpu()
     }
 
     __asm__ volatile ("lidt %0" :: "m"(Idtr));
-    Ke::Print(LOG_TYPE::None, "Cpu Initialized!\n");
+    Ke::Print("Cpu Initialized!\n");
 }
 
 UINT64 Hal::RetrieveHhdmOffset()

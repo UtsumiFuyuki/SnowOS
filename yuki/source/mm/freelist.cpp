@@ -16,7 +16,7 @@ February 5th 2026
 #include <limine.h>
 #include <ke/string.hpp>
 #include <hal/hal.hpp>
-#include <ke/print.hpp>
+#include <ke/log.hpp>
 #include <mm/freelist.hpp>
 
 FREELIST_NODE FreelistHead = {.Start = 0, .Length = 0, .Next = nullptr};
@@ -32,12 +32,12 @@ VOID Mm::InitializeFreelist(limine_memmap_response *MemoryMap)
 
     if (MemoryMap == nullptr)
     {
-        Ke::Print(LOG_TYPE::None, "MemoryMap passed to MmInitializeFreelist is NULL!\n");
+        Ke::Print("MemoryMap passed to MmInitializeFreelist is NULL!\n");
     }
 
     for (UINT64 i = 0; i < MemoryMap->entry_count; i++)
     {
-        //KePrint(LOG_TYPE::None, "Memory Map Entry: %lu | Base: 0x%lX | Length 0x%lX\n", i, MemoryMap->entries[i]->base, MemoryMap->entries[i]->length);
+        //KePrint("Memory Map Entry: %lu | Base: 0x%lX | Length 0x%lX\n", i, MemoryMap->entries[i]->base, MemoryMap->entries[i]->length);
 
         if (MemoryMap->entries[i]->type == LIMINE_MEMMAP_USABLE)
         {
@@ -71,7 +71,7 @@ VOID Mm::InitializeFreelist(limine_memmap_response *MemoryMap)
         }
     }
 
-    Ke::Print(LOG_TYPE::None, "Usable System Memory Detected: %luMiB\n", ((NumberOfPages * 4) / 1024));
+    Ke::Print("Usable System Memory Detected: %luMiB\n", ((NumberOfPages * 4) / 1024));
 }
 
 UINT_PTR Mm::AllocatePhysicalPage()

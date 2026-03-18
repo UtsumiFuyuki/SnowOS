@@ -13,11 +13,12 @@ UtsumiFuyuki
 October 30th 2025
 **/
 
+#include "hal/serial.hpp"
 #include <typedefs.hpp>
 #include <cstdarg>
 #include <ke/string.hpp>
 #include <hal/hal.hpp>
-#include <ke/print.hpp>
+#include <ke/log.hpp>
 
 #define NANOPRINTF_USE_FIELD_WIDTH_FORMAT_SPECIFIERS 1
 #define NANOPRINTF_USE_PRECISION_FORMAT_SPECIFIERS 0
@@ -32,24 +33,29 @@ October 30th 2025
 #include <ke/nanoprintf.hpp>
 
 CHAR Buffer[512];
-INT Index = 0;
+CHAR LoggerBuffer[512];
 
-VOID Ke::Print(LOG_TYPE LogType, LPCSTR String, ...)
+VOID Ke::Log(LPCSTR File, LPCSTR String, ...)
 {
     va_list Arguments;
     va_start(Arguments, String);
 
-    switch (LogType)
-    {
-        case (LOG_TYPE::KeLog):
-            Hal::PrintString("[" ANSI_BRIGHT_CYAN "Ke" ANSI_RESET "] ");
-            break;
-        case (LOG_TYPE::HalLog):
-            Hal::PrintString("[" ANSI_BLUE "Hal" ANSI_RESET "] ");
-            break;
-        case (LOG_TYPE::None):
-            break;
-    }
+    Hal::WriteStringToSerial(COM1, File);
+    Hal::WriteStringToSerial(COM1, ": ");
+
+    npf_vsnprintf(LoggerBuffer, sizeof(LoggerBuffer), String, Arguments);
+
+    Hal::WriteStringToSerial(COM1, LoggerBuffer);
+
+    va_end(Arguments);
+
+    memset(LoggerBuffer, 0, sizeof(LoggerBuffer));
+}
+
+VOID Ke::Print(LPCSTR String, ...)
+{
+    va_list Arguments;
+    va_start(Arguments, String);
 
     npf_vsnprintf(Buffer, sizeof(Buffer), String, Arguments);
 
@@ -58,5 +64,4 @@ VOID Ke::Print(LOG_TYPE LogType, LPCSTR String, ...)
     va_end(Arguments);
 
     memset(Buffer, 0, sizeof(Buffer));
-    Index = 0;
 }
