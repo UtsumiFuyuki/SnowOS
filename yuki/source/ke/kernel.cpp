@@ -18,7 +18,7 @@ October 28th 2025
 #include <hal/hal.hpp>
 #include <hal/serial.hpp>
 #include <ke/print.hpp>
-#include <mm/pmm.hpp>
+#include <mm/freelist.hpp>
 
 #define YUKI_VERSION_MAJOR 0
 #define YUKI_VERSION_MINOR 1
