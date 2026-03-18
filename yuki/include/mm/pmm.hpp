@@ -16,19 +16,19 @@ February 5th 2026
 
 #pragma once
 
-#include <cstdint>
+#include <typedefs.hpp>
 #include <limine.h>
 
 typedef struct FREELIST_NODE
 {
-    uint64_t Start;
-    uint64_t Length;
+    UINT64 Start;
+    UINT64 Length;
     FREELIST_NODE *Next;
 } __attribute__((packed)) FREELIST_NODE;
 
 namespace Mm
 {
-void InitializeFreelist(limine_memmap_response *MemoryMap);
-uintptr_t AllocatePhysicalPage();
-void FreePhysicalPage(uint64_t Page);
+VOID InitializeFreelist(limine_memmap_response *MemoryMap);
+UINT_PTR AllocatePhysicalPage();
+VOID FreePhysicalPage(UINT_PTR Page);
 }

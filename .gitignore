@@ -10,5 +10,6 @@ common/include/freestnd-cxx-hdrs
 common/cc-runtime
 build
 iso_root
+deploy.sh
 .deps-obtained
 .cache

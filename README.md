@@ -79,9 +79,9 @@ VBoxManage modifyvm name-of-vm --x2apic on
 ```
 Also be sure to enable UEFI (this can be done via the VBox GUI though), and now SnowOS should run as intended.
 
-## Credit
-The Limine Bootloader, as well as flanterm, is maintained by mintsuki.
-Nanoprintf is by charlesnicholson.
+## Thanks
+Thanks to mintsuki for their work on the Limine bootloader and flanterm.
+Thanks to charlesnicholson for his work on nanoprintf.
 
 ## License
 SnowOS is under an GPLv3 License.

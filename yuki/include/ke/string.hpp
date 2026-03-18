@@ -16,10 +16,10 @@ October 30th 2025
 
 #pragma once
 
-#include <cstddef>
+#include <typedefs.hpp>
 
-extern "C" void *memcpy(void *__restrict dest, const void *__restrict src, std::size_t n);
-extern "C" void *memset(void *s, int c, std::size_t n);
-extern "C" void *memmove(void *dest, const void *src, std::size_t n);
-extern "C" int memcmp(const void *s1, const void *s2, std::size_t n);
-size_t strlen(char *String);
+extern "C" LPVOID memcpy(LPVOID __restrict dest, LPCVOID __restrict src, UINT64 n);
+extern "C" LPVOID memset(LPVOID s, INT c, UINT64 n);
+extern "C" LPVOID memmove(LPVOID dest, LPCVOID src, UINT64 n);
+extern "C" INT memcmp(LPCVOID s1, LPCVOID s2, UINT64 n);
+UINT64 strlen(LPCSTR String);

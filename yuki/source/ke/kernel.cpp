@@ -13,7 +13,7 @@ UtsumiFuyuki
 October 28th 2025
 **/
 
-#include <cstdint>
+#include <typedefs.hpp>
 #include <limine.h>
 #include <hal/hal.hpp>
 #include <hal/serial.hpp>
@@ -27,20 +27,20 @@ October 28th 2025
 // MSVC puts global constructors in a section .CRT$XCU that is ordered between .CRT$XCA and
 // .CRT$XCZ.
 // This is taken from managarm, thank you :3
-__declspec(allocate(".CRT$XCA")) const void *crt_xct = nullptr;
-__declspec(allocate(".CRT$XCZ")) const void *crt_xcz = nullptr;
+__declspec(allocate(".CRT$XCA")) LPCVOID crt_xct = nullptr;
+__declspec(allocate(".CRT$XCZ")) LPCVOID crt_xcz = nullptr;
 
-extern "C" void KeRunConstructors() {
-	using InitializerPtr = void (*)();
-	uintptr_t begin = reinterpret_cast<uintptr_t>(&crt_xct);
-	uintptr_t end = reinterpret_cast<uintptr_t>(&crt_xcz);
-	for (uintptr_t it = begin + sizeof(void *); it < end; it += sizeof(void *)) {
+extern "C" VOID KeRunConstructors() {
+	using InitializerPtr = VOID (*)();
+	UINT_PTR begin = reinterpret_cast<UINT_PTR>(&crt_xct);
+	UINT_PTR end = reinterpret_cast<UINT_PTR>(&crt_xcz);
+	for (UINT_PTR it = begin + sizeof(LPVOID); it < end; it += sizeof(LPVOID)) {
 		auto *p = reinterpret_cast<InitializerPtr *>(it);
 		(*p)();
 	}
 }
 
-extern "C" void KeMain(void* SnowBootInfo)
+extern "C" VOID KeMain(LPVOID SnowBootInfo)
 {
     KeRunConstructors();
 
@@ -62,7 +62,7 @@ extern "C" void KeMain(void* SnowBootInfo)
 
     Mm::InitializeFreelist(Hal::RetrieveMemoryMap());
 
-    uint64_t Test[100];
+    UINT64 Test[100];
 
     for (size_t i = 0; i < 100; i++)
     {
@@ -78,7 +78,7 @@ extern "C" void KeMain(void* SnowBootInfo)
 
    // __asm__ volatile ("mov $0xcafebabe, %rcx; mov $0xdeadbeef, %rdx; xor %rax, %rax; xor %rbx, %rbx; div %rbx");
 
-   Ke::Print(LOG_TYPE::None, "Done!\n");
+   Ke::Print(LOG_TYPE::None, "Nothing more to do, halting...\r\n");
 
     // We're done, just hang...
     Hal::HaltCpu();

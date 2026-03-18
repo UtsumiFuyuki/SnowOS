@@ -15,6 +15,8 @@ October 30th 2025
 
 #pragma once
 
+#include <typedefs.hpp>
+
 #define ANSI_RESET         "\033[0m"
 #define ANSI_BLACK         "\033[30m"
 #define ANSI_RED           "\033[31m"
@@ -39,5 +41,5 @@ enum class LOG_TYPE {None, KeLog, HalLog};
 
 namespace Ke
 {
-void Print(LOG_TYPE LogType, const char* String, ...);
+VOID Print(LOG_TYPE LogType, LPCSTR String, ...);
 }

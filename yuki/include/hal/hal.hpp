@@ -15,7 +15,7 @@ October 28th 2025
 
 #pragma once
 
-#include <cstdint>
+#include <typedefs.hpp>
 #include <limine.h>
 
 #define KERNEL_CS 0x00af9b000000ffff
@@ -26,37 +26,37 @@ October 28th 2025
 
 typedef struct
 {
-    uint16_t Limit;
-    uint64_t Base;
+    UINT16 Limit;
+    UINT64 Base;
 } __attribute__((packed)) DTR; // Descriptor Table Register
 
 typedef struct
 {
-    uint64_t NullSegment;
-    uint64_t KernelCode;
-    uint64_t KernelData;
-    uint64_t UserCode;
-    uint64_t UserData;
+    UINT64 NullSegment;
+    UINT64 KernelCode;
+    UINT64 KernelData;
+    UINT64 UserCode;
+    UINT64 UserData;
 } __attribute__((packed)) GDT;
 
 typedef struct
 {
-    uint16_t IsrLow;
-    uint16_t SegmentSelector;
-    uint8_t Ist;
-    uint8_t Attributes;
-    uint16_t IsrMid;
-    uint32_t IsrHigh;
-    uint32_t Reserved;
+    UINT16 IsrLow;
+    UINT16 SegmentSelector;
+    UINT8 Ist;
+    UINT8 Attributes;
+    UINT16 IsrMid;
+    UINT32 IsrHigh;
+    UINT32 Reserved;
 } __attribute__((packed)) IDT_ENTRY;
 
 namespace Hal
 {
-void Init();
-void PrintString(const char* String);
-void HaltCpu();
-void InitCpu();
-uint64_t RetrieveHhdmOffset();
+VOID Init();
+VOID PrintString(LPCSTR String);
+VOID HaltCpu();
+VOID InitCpu();
+UINT64 RetrieveHhdmOffset();
 
 limine_memmap_response *RetrieveMemoryMap();
 }

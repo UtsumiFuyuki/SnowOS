@@ -14,43 +14,42 @@ BlueSillyDragon
 October 30th 2025
 **/
 
-#include <cstddef>
-#include <cstdint>
+#include <typedefs.hpp>
 #include <ke/string.hpp>
 
 extern "C" {
 
-    void *memcpy(void *__restrict dest, const void *__restrict src, std::size_t n) {
-        std::uint8_t *__restrict pdest = static_cast<std::uint8_t *__restrict>(dest);
-        const std::uint8_t *__restrict psrc = static_cast<const std::uint8_t *__restrict>(src);
+    LPVOID memcpy(LPVOID __restrict dest, LPCVOID __restrict src, UINT64 n) {
+        UINT8 *__restrict pdest = static_cast<UINT8 *__restrict>(dest);
+        const UINT8 *__restrict psrc = static_cast<const UINT8 *__restrict>(src);
     
-        for (std::size_t i = 0; i < n; i++) {
+        for (UINT64 i = 0; i < n; i++) {
             pdest[i] = psrc[i];
         }
     
         return dest;
     }
     
-    void *memset(void *s, int c, std::size_t n) {
-        std::uint8_t *p = static_cast<std::uint8_t *>(s);
+    LPVOID memset(LPVOID s, INT c, UINT64 n) {
+        UINT8 *p = static_cast<UINT8 *>(s);
     
-        for (std::size_t i = 0; i < n; i++) {
-            p[i] = static_cast<uint8_t>(c);
+        for (UINT64 i = 0; i < n; i++) {
+            p[i] = static_cast<UINT8>(c);
         }
     
         return s;
     }
     
-    void *memmove(void *dest, const void *src, std::size_t n) {
-        std::uint8_t *pdest = static_cast<std::uint8_t *>(dest);
-        const std::uint8_t *psrc = static_cast<const std::uint8_t *>(src);
+    LPVOID memmove(LPVOID dest, LPCVOID src, UINT64 n) {
+        UINT8 *pdest = static_cast<UINT8 *>(dest);
+        const UINT8 *psrc = static_cast<const UINT8 *>(src);
     
         if (src > dest) {
-            for (std::size_t i = 0; i < n; i++) {
+            for (UINT64 i = 0; i < n; i++) {
                 pdest[i] = psrc[i];
             }
         } else if (src < dest) {
-            for (std::size_t i = n; i > 0; i--) {
+            for (UINT64 i = n; i > 0; i--) {
                 pdest[i-1] = psrc[i-1];
             }
         }
@@ -58,11 +57,11 @@ extern "C" {
         return dest;
     }
     
-    int memcmp(const void *s1, const void *s2, std::size_t n) {
-        const std::uint8_t *p1 = static_cast<const std::uint8_t *>(s1);
-        const std::uint8_t *p2 = static_cast<const std::uint8_t *>(s2);
+    INT memcmp(LPCVOID s1, LPCVOID s2, UINT64 n) {
+        const UINT8 *p1 = static_cast<const UINT8 *>(s1);
+        const UINT8 *p2 = static_cast<const UINT8 *>(s2);
     
-        for (std::size_t i = 0; i < n; i++) {
+        for (UINT64 i = 0; i < n; i++) {
             if (p1[i] != p2[i]) {
                 return p1[i] < p2[i] ? -1 : 1;
             }
@@ -72,10 +71,10 @@ extern "C" {
     }
 }
 
-size_t strlen(char *String) {
-        size_t length = 0;
-        for (int i = 0; String[i] != '\0'; i++) {
-            length++;
-        } length++;
-        return length;
+UINT64 strlen(LPCSTR String) {
+        UINT64 Length = 0;
+        for (INT i = 0; String[i] != '\0'; i++) {
+            Length++;
+        } Length++;
+        return Length;
     }

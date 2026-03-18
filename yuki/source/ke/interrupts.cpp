@@ -13,35 +13,36 @@ UtsumiFuyuki
 October 29th 2025
 **/
 
-#include <cstdint>
+#include <typedefs.hpp>
+#include <hal/hal.hpp>
 #include <ke/print.hpp>
 
 typedef struct
 {
-    uint64_t Rax;
-    uint64_t Rbx;
-    uint64_t Rcx;
-    uint64_t Rdx;
-    uint64_t Rbp;
-    uint64_t Rdi;
-    uint64_t Rsi;
-    uint64_t R8;
-    uint64_t R9;
-    uint64_t R10;
-    uint64_t R11;
-    uint64_t R12;
-    uint64_t R13;
-    uint64_t R14;
-    uint64_t R15;
-    uint64_t InterruptVector;
-    uint64_t ErrorCode;
-    uint64_t Rip;
-    uint64_t Cs;
-    uint64_t Rflags;
-    uint64_t Rsp;
+    UINT64 Rax;
+    UINT64 Rbx;
+    UINT64 Rcx;
+    UINT64 Rdx;
+    UINT64 Rbp;
+    UINT64 Rdi;
+    UINT64 Rsi;
+    UINT64 R8;
+    UINT64 R9;
+    UINT64 R10;
+    UINT64 R11;
+    UINT64 R12;
+    UINT64 R13;
+    UINT64 R14;
+    UINT64 R15;
+    UINT64 InterruptVector;
+    UINT64 ErrorCode;
+    UINT64 Rip;
+    UINT64 Cs;
+    UINT64 Rflags;
+    UINT64 Rsp;
 } __attribute__((packed)) InterruptFrame;
 
-__attribute__((noreturn)) extern "C" void KeInterruptHandler(InterruptFrame* StackFrame)
+__attribute__((noreturn)) extern "C" VOID KeInterruptHandler(InterruptFrame* StackFrame)
 {
     Ke::Print(LOG_TYPE::None, "\n" ANSI_BRIGHT_RED "Kernel Panic!!!\n");
     Ke::Print(LOG_TYPE::None, "Stack Frame at: 0x%llX\n\n", StackFrame);
@@ -109,8 +110,9 @@ __attribute__((noreturn)) extern "C" void KeInterruptHandler(InterruptFrame* Sta
     StackFrame->R13,
     StackFrame->R14,
     StackFrame->R15);
-    for (;;)
+    
+    for(;;)
     {
-        __asm__ volatile (" hlt ");
+        Hal::HaltCpu();
     }
 }

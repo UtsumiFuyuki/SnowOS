@@ -13,8 +13,8 @@ UtsumiFuyuki
 February 5th 2026 
 **/
 
+#include <typedefs.hpp>
 #include <limine.h>
-#include <cstdint>
 #include <ke/string.hpp>
 #include <hal/hal.hpp>
 #include <ke/print.hpp>
@@ -22,11 +22,11 @@ February 5th 2026
 
 FREELIST_NODE FreelistHead = {.Start = 0, .Length = 0, .Next = nullptr};
 
-void Mm::InitializeFreelist(limine_memmap_response *MemoryMap)
+VOID Mm::InitializeFreelist(limine_memmap_response *MemoryMap)
 {
-    uint64_t NumberOfPages = 0;
+    ULONG64 NumberOfPages = 0;
 
-    bool EndOfMemory = true;
+    BOOL EndOfMemory = true;
 
     FREELIST_NODE *CurrentNode = &FreelistHead;
     FREELIST_NODE *NextNode;
@@ -36,7 +36,7 @@ void Mm::InitializeFreelist(limine_memmap_response *MemoryMap)
         Ke::Print(LOG_TYPE::None, "MemoryMap passed to MmInitializeFreelist is NULL!\n");
     }
 
-    for (uint64_t i = 0; i < MemoryMap->entry_count; i++)
+    for (UINT64 i = 0; i < MemoryMap->entry_count; i++)
     {
         //KePrint(LOG_TYPE::None, "Memory Map Entry: %lu | Base: 0x%lX | Length 0x%lX\n", i, MemoryMap->entries[i]->base, MemoryMap->entries[i]->length);
 
@@ -45,7 +45,7 @@ void Mm::InitializeFreelist(limine_memmap_response *MemoryMap)
             NumberOfPages += (MemoryMap->entries[i]->length / 0x1000);
 
             // Find next usable chunk of memory
-            for (uint64_t j = i + 1; j < MemoryMap->entry_count; j++)
+            for (UINT64 j = i + 1; j < MemoryMap->entry_count; j++)
             {
                 if (MemoryMap->entries[j]->type == LIMINE_MEMMAP_USABLE)
                 {
@@ -75,9 +75,9 @@ void Mm::InitializeFreelist(limine_memmap_response *MemoryMap)
     Ke::Print(LOG_TYPE::None, "Usable System Memory Detected: %luMiB\n", ((NumberOfPages * 4) / 1024));
 }
 
-uintptr_t Mm::AllocatePhysicalPage()
+UINT_PTR Mm::AllocatePhysicalPage()
 {
-    uintptr_t Address = FreelistHead.Start;
+    UINT_PTR Address = FreelistHead.Start;
 
     FreelistHead.Start += 0x1000;
     FreelistHead.Length -= 0x1000;
@@ -90,7 +90,7 @@ uintptr_t Mm::AllocatePhysicalPage()
     return Address;
 }
 
-void Mm::FreePhysicalPage(uintptr_t Page)
+VOID Mm::FreePhysicalPage(UINT_PTR Page)
 {
     FREELIST_NODE *NewNode = reinterpret_cast<FREELIST_NODE *>(Page + Hal::RetrieveHhdmOffset());
     memset(NewNode, 0, 0x1000);

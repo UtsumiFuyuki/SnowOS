@@ -13,13 +13,14 @@ UtsumiFuyuki
 October 28th 2025
 **/
 
-#include "hal/serial.hpp"
-#include <cstdint>
+#include <typedefs.hpp>
 #include <cstddef>
 #include <limine.h>
 #include <flanterm.h>
 #include <flanterm_backends/fb.h>
 #include <hal/hal.hpp>
+#include <hal/serial.hpp>
+#include <ke/string.hpp>
 #include <ke/print.hpp>
 
 // Limine Stuff
@@ -78,21 +79,11 @@ volatile LIMINE_REQUESTS_END_MARKER;
 
 struct flanterm_context* FtCtx;
 
-uint32_t TerminalForeground = 0xFFFFFF;
-uint32_t TerminalBackground = 0x0000AD;
+UINT32 TerminalForeground = 0xFFFFFF;
+UINT32 TerminalBackground = 0x0000AD;
 
-size_t strlen(const char *string) {
-    size_t length = 0;
-    for (int i = 0; string[i] != '\0'; i++)
-    {
-        length++;
-    }
-    length++;
-    return length;
-}
-
-extern "C" void ReloadSegments();
-extern "C" void* IsrStubTable[];
+extern "C" VOID ReloadSegments();
+extern "C" LPVOID IsrStubTable[];
 
 GDT Gdt {0, KERNEL_CS, KERNEL_DS, USER_CS, USER_DS};
 DTR GdtRegister;
@@ -107,24 +98,24 @@ limine_framebuffer *Framebuffer;
 // Like the memory functions above, these stubs can be moved to a different .cpp file,
 // but should not be removed, unless you know what you are doing.
 extern "C" {
-    int __cxa_atexit(void (*)(void *), void *, void *) { return 0; }
-    void __cxa_pure_virtual() { Hal::HaltCpu(); }
-    void *__dso_handle;
+    INT __cxa_atexit(VOID (*)(LPVOID), LPVOID, LPVOID) { return 0; }
+    VOID __cxa_pure_virtual() { Hal::HaltCpu(); }
+    VOID *__dso_handle;
 }
 
-void HalIdtSetDescriptor(uint8_t Vector, void* Isr, uint8_t Flags) {
+VOID HalIdtSetDescriptor(UINT8 Vector, LPVOID Isr, UINT8 Flags) {
     IDT_ENTRY* Descriptor = &Idt[Vector];
 
-    Descriptor->IsrLow              = (uint64_t)Isr & 0xFFFF;
+    Descriptor->IsrLow              = (UINT64)Isr & 0xFFFF;
     Descriptor->SegmentSelector     = 0x08;
     Descriptor->Ist                 = 0;
     Descriptor->Attributes          = Flags;
-    Descriptor->IsrMid              = ((uint64_t)Isr >> 16) & 0xFFFF;
-    Descriptor->IsrHigh             = ((uint64_t)Isr >> 32) & 0xFFFFFFFF;
+    Descriptor->IsrMid              = ((UINT64)Isr >> 16) & 0xFFFF;
+    Descriptor->IsrHigh             = ((UINT64)Isr >> 32) & 0xFFFFFFFF;
     Descriptor->Reserved            = 0;
 }
 
-void Hal::Init()
+VOID Hal::Init()
 {
     // Ensure the bootloader actually understands our base revision (see spec).
     if (LIMINE_BASE_REVISION_SUPPORTED == false) {
@@ -143,7 +134,7 @@ void Hal::Init()
     FtCtx = flanterm_fb_init(
         NULL,
         NULL,
-        reinterpret_cast<uint32_t *>(Framebuffer->address), Framebuffer->width, Framebuffer->height, Framebuffer->pitch,
+        reinterpret_cast<UINT32 *>(Framebuffer->address), Framebuffer->width, Framebuffer->height, Framebuffer->pitch,
         Framebuffer->red_mask_size, Framebuffer->red_mask_shift,
         Framebuffer->green_mask_size, Framebuffer->green_mask_shift,
         Framebuffer->blue_mask_size, Framebuffer->blue_mask_shift,
@@ -159,13 +150,13 @@ void Hal::Init()
     Hal::InitializeSerial(COM1);
 }
 
-void Hal::PrintString(const char* String)
+VOID Hal::PrintString(LPCSTR String)
 {
     flanterm_write(FtCtx, String, strlen(String));
     Hal::WriteStringToSerial(COM1, String);
 }
 
-void Hal::HaltCpu()
+VOID Hal::HaltCpu()
 {
     for (;;)
     {
@@ -173,20 +164,20 @@ void Hal::HaltCpu()
     }
 }
 
-void Hal::InitCpu()
+VOID Hal::InitCpu()
 {
     // Setup the GDT
-    GdtRegister.Base = reinterpret_cast<uint64_t>(&Gdt);
+    GdtRegister.Base = reinterpret_cast<UINT_PTR>(&Gdt);
     GdtRegister.Limit = (sizeof(Gdt) - 1);
 
     __asm__ volatile ("lgdt %0" :: "m"(GdtRegister));
     ReloadSegments();
 
     // Setup the IDT
-    Idtr.Base = (uint64_t)&Idt;
-    Idtr.Limit = (uint16_t)sizeof(IDT_ENTRY) * 256 - 1;
+    Idtr.Base = (UINT_PTR)&Idt;
+    Idtr.Limit = (UINT16)sizeof(IDT_ENTRY) * 256 - 1;
 
-    for(int i = 0; i < 40; i++)
+    for(INT i = 0; i < 40; i++)
     {
         HalIdtSetDescriptor(i, IsrStubTable[i], 0x8e);
     }
@@ -195,7 +186,7 @@ void Hal::InitCpu()
     Ke::Print(LOG_TYPE::None, "Cpu Initialized!\n");
 }
 
-uint64_t Hal::RetrieveHhdmOffset()
+UINT64 Hal::RetrieveHhdmOffset()
 {
     return LimineHhdmRequest.response->offset;
 }

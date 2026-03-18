@@ -13,6 +13,7 @@ UtsumiFuyuki
 October 30th 2025
 **/
 
+#include <typedefs.hpp>
 #include <cstdarg>
 #include <ke/string.hpp>
 #include <hal/hal.hpp>
@@ -30,10 +31,10 @@ October 30th 2025
 #define NANOPRINTF_IMPLEMENTATION
 #include <ke/nanoprintf.hpp>
 
-char Buffer[512];
-int Index = 0;
+CHAR Buffer[512];
+INT Index = 0;
 
-void Ke::Print(LOG_TYPE LogType, const char *String, ...)
+VOID Ke::Print(LOG_TYPE LogType, LPCSTR String, ...)
 {
     va_list Arguments;
     va_start(Arguments, String);
