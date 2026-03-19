@@ -18,7 +18,7 @@ October 28th 2025
 #include <hal/hal.hpp>
 #include <hal/serial.hpp>
 #include <ke/log.hpp>
-#include <mm/freelist.hpp>
+#include <mm/early_alloc.hpp>
 
 #define YUKI_VERSION_MAJOR 0
 #define YUKI_VERSION_MINOR 1
@@ -59,25 +59,16 @@ extern "C" VOID KeMain(LPVOID SnowBootInfo)
     }
 
     Hal::InitCpu();
+    Mm::EarlyInit();
 
-    Mm::InitializeFreelist(Hal::RetrieveMemoryMap());
+    UINT64 *Test = Mm::EarlyAllocatePage();
+    
+    *Test = 192;
 
-    UINT64 Test[100];
+    Ke::Log(__FILE__, "Test located at 0x%llX\r\n", Test);
 
-    for (size_t i = 0; i < 100; i++)
-    {
-        Test[i] = Mm::AllocatePhysicalPage();
-    }
-
-    for (size_t i = 100; i > 0; i--)
-    {
-        Mm::FreePhysicalPage(Test[i]);
-    }
-
-   // __asm__ volatile ("mov $0xcafebabe, %rcx; mov $0xdeadbeef, %rdx; xor %rax, %rax; xor %rbx, %rbx; div %rbx");
-
-   Ke::Print("Nothing more to do, halting...\r\n");
-   Ke::Log(__FILE__, "Reached end of KeMain!\r\n");
+    Ke::Print("Nothing more to do, halting...\r\n");
+    Ke::Log(__FILE__, "Reached end of KeMain!\r\n");
 
     // We're done, just hang...
     Hal::HaltCpu();

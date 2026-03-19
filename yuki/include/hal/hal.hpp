@@ -24,13 +24,13 @@ October 28th 2025
 #define USER_CS 0x00affb000000ffff
 #define USER_DS 0x00aff3000000ffff
 
-typedef struct
+typedef struct _DTR
 {
     UINT16 Limit;
     UINT64 Base;
 } __attribute__((packed)) DTR; // Descriptor Table Register
 
-typedef struct
+typedef struct _GDT
 {
     UINT64 NullSegment;
     UINT64 KernelCode;
@@ -39,7 +39,7 @@ typedef struct
     UINT64 UserData;
 } __attribute__((packed)) GDT;
 
-typedef struct
+typedef struct _IDT_ENTRY
 {
     UINT16 IsrLow;
     UINT16 SegmentSelector;

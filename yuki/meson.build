@@ -17,7 +17,7 @@ sources = files(
     'source/hal/flanterm/src/flanterm.c',
     'source/hal/flanterm/src/flanterm_backends/fb.c',
     'source/hal/serial.cpp',
-    'source/mm/freelist.cpp',
+    'source/mm/early_alloc.cpp',
 )
 
 add_project_arguments(

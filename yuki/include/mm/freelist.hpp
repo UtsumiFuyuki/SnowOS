@@ -18,16 +18,15 @@ February 5th 2026
 #include <typedefs.hpp>
 #include <limine.h>
 
-typedef struct FREELIST_NODE
+typedef struct _FREELIST_NODE
 {
     UINT64 Start;
     UINT64 Length;
-    FREELIST_NODE *Next;
+    _FREELIST_NODE *Next;
 } __attribute__((packed)) FREELIST_NODE;
 
 namespace Mm
 {
-VOID InitializeFreelist(limine_memmap_response *MemoryMap);
 UINT_PTR AllocatePhysicalPage();
 VOID FreePhysicalPage(UINT_PTR Page);
 }
