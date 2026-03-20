@@ -61,11 +61,8 @@ extern "C" VOID KeMain(LPVOID SnowBootInfo)
     Hal::InitCpu();
     Mm::EarlyInit();
 
-    UINT64 *Test = Mm::EarlyAllocatePage();
-    
+    UINT64 *Test = reinterpret_cast<UINT64 *>(Mm::EarlyAllocatePage() + Hal::RetrieveHhdmOffset());
     *Test = 192;
-
-    Ke::Log(__FILE__, "Test located at 0x%llX\r\n", Test);
 
     Ke::Print("Nothing more to do, halting...\r\n");
     Ke::Log(__FILE__, "Reached end of KeMain!\r\n");

@@ -15,8 +15,14 @@ March 19th 2026
 
 #include <typedefs.hpp>
 
+typedef struct _EARLY_ALLOC_REGION
+{
+    UINT_PTR Base;
+    UINT64 Size;
+} EARLY_ALLOC_REGION;
+
 namespace Mm
 {
     VOID EarlyInit();
-    UINT64 *EarlyAllocatePage();
+    UINT_PTR EarlyAllocatePage();
 }

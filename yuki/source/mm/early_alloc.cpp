@@ -18,31 +18,40 @@ March 19th 2026
 #include <mm/early_alloc.hpp>
 #include <ke/log.hpp>
 
-UINT64 BumpStart{};
+EARLY_ALLOC_REGION LargestRegion{.Base = 0, .Size = 0};
 
 // Simple bump allocator for bootstrapping
+// TODO: there may not be a memmap entry big enough to map everything, iterate through memmap instead
 VOID Mm::EarlyInit()
 {
     Ke::Log(__FILE__, "Initializing bump allocator...\r\n");
 
     limine_memmap_response *MemoryMap = Hal::RetrieveMemoryMap();
-    UINT64 LargestArea{};
 
     for (UINT64 i = 0; i < MemoryMap->entry_count; i++)
     {
-        if ((MemoryMap->entries[i]->length / 0x1000) > LargestArea && MemoryMap->entries[i]->type == LIMINE_MEMMAP_USABLE)
+        if ((MemoryMap->entries[i]->length / 0x1000) > LargestRegion.Size && MemoryMap->entries[i]->type == LIMINE_MEMMAP_USABLE)
         {
             Ke::Log(__FILE__, "New largest area found at 0x%llX\r\n", MemoryMap->entries[i]->base);
-            BumpStart = MemoryMap->entries[i]->base + Hal::RetrieveHhdmOffset();
-            LargestArea = (MemoryMap->entries[i]->length / 0x1000);
+            LargestRegion.Base = MemoryMap->entries[i]->base;
+            LargestRegion.Size = MemoryMap->entries[i]->length / 0x1000;
         }
     }
     Ke::Print("Initialized bootstrap allocator!\r\n");
 }
 
-UINT64 *Mm::EarlyAllocatePage()
+UINT_PTR Mm::EarlyAllocatePage()
 {
-    UINT64 *Address = reinterpret_cast<UINT64 *>(BumpStart);
-    BumpStart += 0x1000;
+    UINT_PTR Address = LargestRegion.Base;
+
+    if (LargestRegion.Size == 0)
+    {
+        Ke::Log(__FILE__, "Attempt to allocate a page failed due to OOM!\r\n");
+        return 0;
+    }
+
+    LargestRegion.Base += 0x1000;
+    LargestRegion.Size--;
+
     return Address;
 }
