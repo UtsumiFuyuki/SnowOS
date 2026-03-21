@@ -16,6 +16,7 @@ sources = files(
     'source/hal/isr.asm',
     'source/hal/flanterm/src/flanterm.c',
     'source/hal/flanterm/src/flanterm_backends/fb.c',
+    'source/hal/x64/paging.cpp',
     'source/hal/serial.cpp',
     'source/mm/early_alloc.cpp',
 )

@@ -19,6 +19,7 @@ October 28th 2025
 #include <hal/serial.hpp>
 #include <ke/log.hpp>
 #include <mm/early_alloc.hpp>
+#include <hal/x64/paging.hpp>
 
 #define YUKI_VERSION_MAJOR 0
 #define YUKI_VERSION_MINOR 1
@@ -61,8 +62,8 @@ extern "C" VOID KeMain(LPVOID SnowBootInfo)
     Hal::InitCpu();
     Mm::EarlyInit();
 
-    UINT64 *Test = reinterpret_cast<UINT64 *>(Mm::EarlyAllocatePage() + Hal::RetrieveHhdmOffset());
-    *Test = 192;
+    Hal::X64::PagingInit();
+    Hal::X64::MapPage(0xCAFEB000, 0xDEADBEEF, PTE_WRITE);
 
     Ke::Print("Nothing more to do, halting...\r\n");
     Ke::Log(__FILE__, "Reached end of KeMain!\r\n");
