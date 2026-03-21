@@ -30,6 +30,6 @@ namespace Hal
         VOID SetCr3(UINT_PTR Pml4);
         PAGE_TABLE_ENTRY CreateNewEntry(UINT64 Flags);
         VOID MapPage(UINT_PTR PhysicalAddress, UINT_PTR VirtualAddress, UINT64 Flags);
-        VOID MapPages();
+        VOID MapPages(UINT_PTR PhysicalAddress, UINT_PTR VirtualAddress, UINT64 Length, UINT64 Flags);
     }
 }

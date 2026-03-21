@@ -52,18 +52,18 @@ extern "C" VOID KeMain(LPVOID SnowBootInfo)
     
     if (SnowBootInfo == nullptr)
     {
-        Ke::Print("Limine\n\n");
+        Ke::Print("Limine\r\n\r\n");
     }
     else
     {
-        Ke::Print("SnowBoot\n");
+        Ke::Print("SnowBoot\r\n");
     }
 
     Hal::InitCpu();
     Mm::EarlyInit();
 
     Hal::X64::PagingInit();
-    Hal::X64::MapPage(0xCAFEB000, 0xDEADBEEF, PTE_WRITE);
+    Hal::X64::MapPages(0xCAFEB000, 0xDEADB000, 0x4000, PTE_WRITE);
 
     Ke::Print("Nothing more to do, halting...\r\n");
     Ke::Log(__FILE__, "Reached end of KeMain!\r\n");

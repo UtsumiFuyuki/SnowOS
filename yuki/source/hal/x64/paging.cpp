@@ -33,7 +33,7 @@ VOID Hal::X64::MapPage(UINT_PTR PhysicalAddress, UINT_PTR VirtualAddress, UINT64
 
     if ((PhysicalAddress & 0xFFF) != 0 || (VirtualAddress & 0xFFF) != 0)
     {
-        Ke::Log(__FILE__, "0x%llX or 0x%llX is not page-aligned!\r\n", PhysicalAddress, VirtualAddress);
+        Ke::Log(__FILE__, "PA 0x%llX or VA 0x%llX is not page-aligned!\r\n", PhysicalAddress, VirtualAddress);
         return;
     }
 
@@ -61,4 +61,18 @@ VOID Hal::X64::MapPage(UINT_PTR PhysicalAddress, UINT_PTR VirtualAddress, UINT64
     }
 
     Ke::Log(__FILE__, "Physical Address 0x%llX has been mapped to Virtual Address 0x%llX\r\n", PhysicalAddress, VirtualAddress);
+}
+
+VOID Hal::X64::MapPages(UINT_PTR PhysicalAddress, UINT_PTR VirtualAddress, UINT64 Length, UINT64 Flags)
+{
+    if ((PhysicalAddress & 0xFFF) != 0 || (VirtualAddress & 0xFFF) != 0 || (Length & 0xFFF) != 0)
+    {
+        Ke::Log(__FILE__, "PA 0x%llX, VA 0x%llX or Length 0x%llX is not page-aligned!\r\n", PhysicalAddress, VirtualAddress, Length);
+        return;
+    }
+
+    for (UINT64 i = 0; i < Length; i += 0x1000)
+    {
+        MapPage(PhysicalAddress + i, VirtualAddress + i, Flags);
+    }
 }
