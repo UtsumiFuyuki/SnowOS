@@ -63,7 +63,9 @@ extern "C" VOID KeMain(LPVOID SnowBootInfo)
     Mm::EarlyInit();
 
     Hal::X64::PagingInit();
-    Hal::X64::MapPages(0xCAFEB000, 0xDEADB000, 0x4000, PTE_WRITE);
+    UINT64 Test = Mm::EarlyAllocatePage();
+
+    Mm::MapPhysicalAddress(Test, 0x8000);
 
     Ke::Print("Nothing more to do, halting...\r\n");
     Ke::Log(__FILE__, "Reached end of KeMain!\r\n");

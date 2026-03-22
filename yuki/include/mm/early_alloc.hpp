@@ -25,4 +25,5 @@ namespace Mm
 {
     VOID EarlyInit();
     UINT_PTR EarlyAllocatePage();
+    VOID MapPhysicalAddress(UINT64 PhysicalAddress, UINT64 Length);
 }

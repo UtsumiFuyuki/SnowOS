@@ -15,10 +15,14 @@ March 19th 2026
 
 #include <limine.h>
 #include <hal/hal.hpp>
+#include <hal/x64/paging.hpp>
 #include <mm/early_alloc.hpp>
 #include <ke/log.hpp>
 
 EARLY_ALLOC_REGION LargestRegion{.Base = 0, .Size = 0};
+
+// We're currently bump-allocating virtual addresses, it's messy, but should work for now
+UINT64 VirtRegion = 0xFFFFFFFFA0000000;
 
 // Simple bump allocator for bootstrapping
 // TODO: there may not be a memmap entry big enough to map everything, iterate through memmap instead
@@ -54,4 +58,20 @@ UINT_PTR Mm::EarlyAllocatePage()
     LargestRegion.Size--;
 
     return Address;
+}
+
+VOID Mm::MapPhysicalAddress(UINT64 PhysicalAddress, UINT64 Length)
+{
+    Length += (PhysicalAddress & 0xFFF);
+    if ((Length & 0xFFF) != 0)
+    {
+        // Round up length
+        Length = Length & ~0xFFF;
+        Length += 0x1000;
+    }
+    PhysicalAddress = PhysicalAddress & ~0xFFF;
+
+    Hal::X64::MapPages(PhysicalAddress, VirtRegion, Length, PTE_WRITE);
+    Ke::Log(__FILE__, "%llu pages mapped, starting at 0x%llX\r\n", (Length / 0x1000), VirtRegion);
+    VirtRegion += Length;
 }
