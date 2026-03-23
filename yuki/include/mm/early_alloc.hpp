@@ -13,6 +13,8 @@ UtsumiFuyuki
 March 19th 2026
 **/
 
+#pragma once
+
 #include <typedefs.hpp>
 
 typedef struct _EARLY_ALLOC_REGION

@@ -6,7 +6,7 @@
 
 UINT64 *KernelPml4{};
 
-VOID Hal::X64::PagingInit()
+VOID Hal::X64::InitializePaging()
 {
     UINT64 Cr3;
     __asm__ volatile ("mov %%cr3, %0" : "=a"(Cr3));
@@ -60,7 +60,7 @@ VOID Hal::X64::MapPage(UINT_PTR PhysicalAddress, UINT_PTR VirtualAddress, UINT64
         Level = reinterpret_cast<UINT64 *>((Entry & PT_ADDR) + Hal::RetrieveHhdmOffset());
     }
 
-    Ke::Log(__FILE__, "Physical Address 0x%llX has been mapped to Virtual Address 0x%llX\r\n", PhysicalAddress, VirtualAddress);
+    //Ke::Log(__FILE__, "Physical Address 0x%llX has been mapped to Virtual Address 0x%llX\r\n", PhysicalAddress, VirtualAddress);
 }
 
 VOID Hal::X64::MapPages(UINT_PTR PhysicalAddress, UINT_PTR VirtualAddress, UINT64 Length, UINT64 Flags)
@@ -74,5 +74,28 @@ VOID Hal::X64::MapPages(UINT_PTR PhysicalAddress, UINT_PTR VirtualAddress, UINT6
     for (UINT64 i = 0; i < Length; i += 0x1000)
     {
         MapPage(PhysicalAddress + i, VirtualAddress + i, Flags);
+    }
+}
+
+UINT64 Hal::X64::VirtualToPhysical(UINT64 VirtualAddress)
+{
+    UINT64 *Level = KernelPml4;
+
+    for (UINT64 i = 39; i >= 12; i -= 9)
+    {
+        PAGE_TABLE_ENTRY Entry = Level[((VirtualAddress >> i) & 0x1FF)];
+
+        if (!(Entry & PTE_PRESENT))
+        {
+            //Ke::Log(__FILE__, "Virtual Address 0x%llX has no mapping!\r\n", VirtualAddress);
+            return 0;
+        }
+
+        if (i == PT_SHIFT)
+        {
+            return (Entry & PT_ADDR);
+        }
+
+        Level = reinterpret_cast<UINT64 *>((Entry & PT_ADDR) + Hal::RetrieveHhdmOffset());
     }
 }

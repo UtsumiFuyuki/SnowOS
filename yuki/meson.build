@@ -17,8 +17,10 @@ sources = files(
     'source/hal/flanterm/src/flanterm.c',
     'source/hal/flanterm/src/flanterm_backends/fb.c',
     'source/hal/x64/paging.cpp',
+    'source/hal/paging.cpp',
     'source/hal/serial.cpp',
     'source/mm/early_alloc.cpp',
+    'source/mm/mminit.cpp'
 )
 
 add_project_arguments(

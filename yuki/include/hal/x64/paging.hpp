@@ -26,10 +26,11 @@ namespace Hal
 {
     namespace X64
     {
-        VOID PagingInit();
+        VOID InitializePaging();
         VOID SetCr3(UINT_PTR Pml4);
         PAGE_TABLE_ENTRY CreateNewEntry(UINT64 Flags);
         VOID MapPage(UINT_PTR PhysicalAddress, UINT_PTR VirtualAddress, UINT64 Flags);
-        VOID MapPages(UINT_PTR PhysicalAddress, UINT_PTR VirtualAddress, UINT64 Length, UINT64 Flags);
+        VOID MapPages(UINT_PTR PhysicalAddress, UINT_PTR VirtualAddress, UINT64 Length, UINT64 Flags); 
+        UINT64 VirtualToPhysical(UINT64 VirtualAddress);
     }
 }

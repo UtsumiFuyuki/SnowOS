@@ -13,6 +13,8 @@ UtsumiFuyuki
 October 28th 2025
 **/
 
+#include "hal/paging.hpp"
+#include "mm/mm.hpp"
 #include <typedefs.hpp>
 #include <limine.h>
 #include <hal/hal.hpp>
@@ -62,10 +64,7 @@ extern "C" VOID KeMain(LPVOID SnowBootInfo)
     Hal::InitCpu();
     Mm::EarlyInit();
 
-    Hal::X64::PagingInit();
-    UINT64 Test = Mm::EarlyAllocatePage();
-
-    Mm::MapPhysicalAddress(Test, 0x8000);
+    Hal::InitializePaging();
 
     Ke::Print("Nothing more to do, halting...\r\n");
     Ke::Log(__FILE__, "Reached end of KeMain!\r\n");
