@@ -11,5 +11,6 @@ namespace Hal
     VOID InitializePaging();
     VOID MapPage(UINT_PTR PhysicalAddress, UINT_PTR VirtualAddress, UINT_PTR Flags);
     VOID MapPages(UINT_PTR PhysicalAddress, UINT_PTR VirtualAddress, UINT64 Length, UINT64 Flags);
+    UINT_PTR VirtualToPhysical(UINT_PTR VirtualAddress);
     UINT64 GeneralFlagsToArchSpecific(UINT64 Flags);
 }

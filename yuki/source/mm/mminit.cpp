@@ -10,13 +10,12 @@ for the Mm subsystem of Yuki
 
 Author:
 UtsumiFuyuki
-February 5th 2026 
+March 23rd 2026
 **/
 
 #include <mm/mm.hpp>
 #include <hal/hal.hpp>
 #include <hal/paging.hpp>
-#include <hal/x64/paging.hpp>
 #include <ke/log.hpp>
 
 PPFN_ENTRY PFNDB{};
@@ -30,7 +29,7 @@ VOID Mm::Initialize()
 {
     // Start the PFNdb at 0xFFFFFA8000000000
     UINT_PTR PFNDBStart = Mm::EarlyAllocatePage();
-    Hal::X64::MapPage(PFNDBStart, PFNDBVirtualStart, PTE_WRITE | PTE_EXECUTE_DISABLE);
+    Hal::MapPage(PFNDBStart, PFNDBVirtualStart, PAGE_WRITE | PAGE_NO_EXECUTE);
 
     PFNDB = reinterpret_cast<PPFN_ENTRY>(PFNDBVirtualStart);
 
@@ -45,7 +44,7 @@ VOID Mm::Initialize()
         // The Virtual Address to which the region extends to
         UINT64 Length = Start + ((MemoryMap->entries[i]->length / 0x1000) * sizeof(PFN_ENTRY));
 
-        if (Hal::X64::VirtualToPhysical(Start & ~0xFFF) == 0 && MemoryMap->entries[i]->type == LIMINE_MEMMAP_USABLE)
+        if (Hal::VirtualToPhysical(Start & ~0xFFF) == 0 && MemoryMap->entries[i]->type == LIMINE_MEMMAP_USABLE)
         {
             // Virtual Address is not backed
             for (UINT64 k = 0; k < (((Length - Start) & ~0xFFF) / 0x1000) + 1; k++)
@@ -58,12 +57,12 @@ VOID Mm::Initialize()
                     return;
                 }
 
-                Hal::X64::MapPage(BackingPage, (Start & ~0xFFF) + (k * 0x1000), PTE_WRITE | PTE_EXECUTE_DISABLE);
+                Hal::MapPage(BackingPage, (Start & ~0xFFF) + (k * 0x1000), PAGE_WRITE | PAGE_NO_EXECUTE);
             }
         }
 
         NumberOfPages += (MemoryMap->entries[i]->length / 0x1000);
     }
-    
+
     Ke::Print("PFNdb Initialized!\r\n");
 }

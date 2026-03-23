@@ -1,3 +1,4 @@
+#include "typedefs.hpp"
 #include <hal/paging.hpp>
 #include <hal/x64/paging.hpp>
 #include <mm/early_alloc.hpp>
@@ -13,21 +14,21 @@ UINT64 Hal::GeneralFlagsToArchSpecific(UINT64 Flags)
 {
     UINT64 ArchFlags{};
 
-    if (Flags | PAGE_WRITE)
+    if (Flags & PAGE_WRITE)
     {
         #if defined (__x86_64__)
             ArchFlags |= PTE_WRITE;
         #endif
     }
 
-    if (Flags | PAGE_USER)
+    if (Flags & PAGE_USER)
     {
         #if defined (__x86_64__)
             ArchFlags |= PTE_USER;
         #endif
     }
 
-    if (Flags | PAGE_NO_EXECUTE)
+    if (Flags & PAGE_NO_EXECUTE)
     {
         #if defined (__x86_64__)
             ArchFlags |= PTE_EXECUTE_DISABLE;
@@ -53,4 +54,12 @@ VOID Hal::MapPages(UINT_PTR PhysicalAddress, UINT_PTR VirtualAddress, UINT64 Len
     #if defined (__x86_64__)
             Hal::X64::MapPages(PhysicalAddress, VirtualAddress, Length, Flags);
     #endif
+}
+
+UINT_PTR Hal::VirtualToPhysical(UINT_PTR VirtualAddress)
+{
+    #if defined (__x86_64__)
+        return Hal::X64::VirtualToPhysical(VirtualAddress);
+    #endif
+    return 0;
 }

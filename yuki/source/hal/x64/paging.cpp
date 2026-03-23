@@ -77,7 +77,7 @@ VOID Hal::X64::MapPages(UINT_PTR PhysicalAddress, UINT_PTR VirtualAddress, UINT6
     }
 }
 
-UINT64 Hal::X64::VirtualToPhysical(UINT64 VirtualAddress)
+UINT_PTR Hal::X64::VirtualToPhysical(UINT_PTR VirtualAddress)
 {
     UINT64 *Level = KernelPml4;
 
