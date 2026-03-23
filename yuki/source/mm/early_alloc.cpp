@@ -36,7 +36,6 @@ VOID Mm::EarlyInit()
     {
         if ((MemoryMap->entries[i]->length / 0x1000) > LargestRegion.Size && MemoryMap->entries[i]->type == LIMINE_MEMMAP_USABLE)
         {
-            Ke::Log(__FILE__, "New largest area found at 0x%llX\r\n", MemoryMap->entries[i]->base);
             LargestRegion.Base = MemoryMap->entries[i]->base;
             LargestRegion.Size = MemoryMap->entries[i]->length / 0x1000;
         }

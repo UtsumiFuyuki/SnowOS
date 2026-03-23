@@ -65,6 +65,7 @@ extern "C" VOID KeMain(LPVOID SnowBootInfo)
     Mm::EarlyInit();
 
     Hal::InitializePaging();
+    Mm::Initialize();
 
     Ke::Print("Nothing more to do, halting...\r\n");
     Ke::Log(__FILE__, "Reached end of KeMain!\r\n");

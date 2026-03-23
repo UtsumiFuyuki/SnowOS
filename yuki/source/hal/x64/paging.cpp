@@ -87,7 +87,6 @@ UINT64 Hal::X64::VirtualToPhysical(UINT64 VirtualAddress)
 
         if (!(Entry & PTE_PRESENT))
         {
-            //Ke::Log(__FILE__, "Virtual Address 0x%llX has no mapping!\r\n", VirtualAddress);
             return 0;
         }
 
