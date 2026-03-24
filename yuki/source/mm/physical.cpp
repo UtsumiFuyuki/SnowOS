@@ -46,21 +46,13 @@ VOID Mm::Initialize()
     for (UINT64 i = 0; i < MemoryMap->entry_count; i++)
     {
         UINT64 Start = (PFNDBVirtualStart + ((MemoryMap->entries[i]->base >> 12) * sizeof(PFN_ENTRY)));
-        Ke::Log(__FILE__, "Start 0x%llX\r\n", Start);
 
         // The Virtual Address to which the region extends to
         UINT64 Length = Start + (((MemoryMap->entries[i]->base + MemoryMap->entries[i]->length) >> 12) * sizeof(PFN_ENTRY));
-        Ke::Log(__FILE__, "Length 0x%llX\r\n", Length);
-
-        Ke::Log(__FILE__, "Base 0x%llX Length 0x%llX End of Region 0x%llX\r\n",
-                    MemoryMap->entries[i]->base,
-                    MemoryMap->entries[i]->length,
-                    MemoryMap->entries[i]->base + MemoryMap->entries[i]->length);
 
         if (Hal::VirtualToPhysical((Length & ~0xFFF) - 0x1000) == 0 && MemoryMap->entries[i]->type == LIMINE_MEMMAP_USABLE)
         {
             UINT64 PagesToAlloc = (((Length & ~0xFFF) - (Start & ~0xFFF)) / 0x1000);
-            Ke::Log(__FILE__, "Pages to Allocate %llu\r\n\r\n", PagesToAlloc);
 
             // Virtual Address is not backed
             for (UINT64 k = 0; k <= PagesToAlloc + 1; k++)
@@ -85,6 +77,9 @@ VOID Mm::Initialize()
     {
         if (MemoryMap->entries[i]->type == LIMINE_MEMMAP_USABLE)
         {
+            Ke::Log(__FILE__, "Start of Usable Region 0x%llX End of usable region 0x%llX\r\n",
+                MemoryMap->entries[i]->base,
+                MemoryMap->entries[i]->base + MemoryMap->entries[i]->length);
             for (UINT64 k = 0; k < MemoryMap->entries[i]->length; k += 0x1000)
             {
                 UINT_PTR PhysicalBase = (MemoryMap->entries[i]->base + k);
@@ -105,10 +100,14 @@ VOID Mm::Initialize()
                     FreeList.PageCount++;
                 }
             }
+
+            TotalPages += MemoryMap->entries[i]->length / 0x1000;
         }
     }
 
     Ke::Print("PFNdb Initialized!\r\n");
+
+    Ke::Log(__FILE__, "Number of usable pages in system %llu\r\n", TotalPages);
 }
 
 // Returns the physical address of a free page
@@ -120,11 +119,10 @@ UINT_PTR Mm::AllocatePage()
         Ke::Log(__FILE__, "Couldn't allocate a page due to OOM!\r\n");
         return 0;
     }
-    PPFN_ENTRY Entry = FreeList.Head;
+    UINT_PTR Address = reinterpret_cast<UINT_PTR>(FreeList.Head) - PFNDBVirtualStart;
 
     FreeList.Head = FreeList.Head->PageEntry;
     FreeList.PageCount--;
-    Ke::Log(__FILE__, "Head is now 0x%llX\r\n", FreeList.Head);
 
-    return reinterpret_cast<UINT_PTR>(Entry);
+    return reinterpret_cast<UINT_PTR>((Address / sizeof(PFN_ENTRY)) << 12);
 }
