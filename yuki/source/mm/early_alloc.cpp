@@ -21,6 +21,9 @@ March 19th 2026
 
 EARLY_ALLOC_REGION LargestRegion{.Base = 0, .Size = 0};
 
+extern "C" UINT64 BootstrapMemoryBase{};
+extern "C" UINT64 BootstrapMemoryAllocated{};
+
 // We're currently bump-allocating virtual addresses, it's messy, but should work for now
 UINT64 VirtRegion = 0xFFFFFFFFA0000000;
 
@@ -40,6 +43,8 @@ VOID Mm::EarlyInit()
             LargestRegion.Size = MemoryMap->entries[i]->length / 0x1000;
         }
     }
+    BootstrapMemoryBase = LargestRegion.Base;
+
     Ke::Print("Initialized bootstrap allocator!\r\n");
 }
 
@@ -55,6 +60,8 @@ UINT_PTR Mm::EarlyAllocatePage()
 
     LargestRegion.Base += 0x1000;
     LargestRegion.Size--;
+
+    BootstrapMemoryAllocated++;
 
     return Address;
 }

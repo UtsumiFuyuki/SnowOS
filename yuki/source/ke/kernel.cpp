@@ -67,6 +67,12 @@ extern "C" VOID KeMain(LPVOID SnowBootInfo)
     Hal::InitializePaging();
     Mm::Initialize();
 
+    UINT_PTR Test = Mm::AllocatePage();
+    Ke::Log(__FILE__, "Allocated page at 0x%llX\r\n", Test);
+
+    UINT_PTR Test2 = Mm::AllocatePage();
+    Ke::Log(__FILE__, "Allocated page at 0x%llX\r\n", Test2);
+
     Ke::Print("Nothing more to do, halting...\r\n");
     Ke::Log(__FILE__, "Reached end of KeMain!\r\n");
 

@@ -20,7 +20,7 @@ sources = files(
     'source/hal/paging.cpp',
     'source/hal/serial.cpp',
     'source/mm/early_alloc.cpp',
-    'source/mm/mminit.cpp'
+    'source/mm/physical.cpp'
 )
 
 add_project_arguments(
