@@ -25,4 +25,5 @@ namespace Mm
 {
     VOID Initialize();
     UINT_PTR AllocatePage();
+    VOID FreePage(UINT_PTR PhysicalAddress);
 }

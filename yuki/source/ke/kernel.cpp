@@ -13,15 +13,12 @@ UtsumiFuyuki
 October 28th 2025
 **/
 
-#include "hal/paging.hpp"
-#include "mm/mm.hpp"
 #include <typedefs.hpp>
-#include <limine.h>
 #include <hal/hal.hpp>
+#include <hal/paging.hpp>
 #include <hal/serial.hpp>
 #include <ke/log.hpp>
-#include <mm/early_alloc.hpp>
-#include <hal/x64/paging.hpp>
+#include <mm/mm.hpp>
 
 #define YUKI_VERSION_MAJOR 0
 #define YUKI_VERSION_MINOR 1
@@ -67,12 +64,9 @@ extern "C" VOID KeMain(LPVOID SnowBootInfo)
     Hal::InitializePaging();
     Mm::Initialize();
 
-    for (UINT64 i = 0; i < 1000; i++)
-    {
-        UINT_PTR Test = Mm::AllocatePage();
-    }
+    UINT_PTR Test = Mm::AllocatePage();
+    Mm::FreePage(Test);
 
-    Ke::Print("Nothing more to do, halting...\r\n");
     Ke::Log(__FILE__, "Reached end of KeMain!\r\n");
 
     // We're done, just hang...

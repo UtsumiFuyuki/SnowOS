@@ -70,20 +70,15 @@ VOID Mm::Initialize()
         }
     }
 
-    Ke::Log(__FILE__, "Bootstrap Memory Base 0x%llX Boostrap Pages Allocated %llu\r\n", BootstrapMemoryBase, BootstrapMemoryAllocated);
-
     // Initialize all entries in the PFNdb
     for (UINT64 i = 0; i < MemoryMap->entry_count; i++)
     {
         if (MemoryMap->entries[i]->type == LIMINE_MEMMAP_USABLE)
         {
-            Ke::Log(__FILE__, "Start of Usable Region 0x%llX End of usable region 0x%llX\r\n",
-                MemoryMap->entries[i]->base,
-                MemoryMap->entries[i]->base + MemoryMap->entries[i]->length);
             for (UINT64 k = 0; k < MemoryMap->entries[i]->length; k += 0x1000)
             {
                 UINT_PTR PhysicalBase = (MemoryMap->entries[i]->base + k);
-                PFN_NUMBER Pfn = ((PhysicalBase & ~0xFFF) >> 12);
+                PFN_NUMBER Pfn = (PhysicalBase >> 12);
 
                 
 
@@ -106,8 +101,6 @@ VOID Mm::Initialize()
     }
 
     Ke::Print("PFNdb Initialized!\r\n");
-
-    Ke::Log(__FILE__, "Number of usable pages in system %llu\r\n", TotalPages);
 }
 
 // Returns the physical address of a free page
@@ -125,4 +118,14 @@ UINT_PTR Mm::AllocatePage()
     FreeList.PageCount--;
 
     return reinterpret_cast<UINT_PTR>((Address / sizeof(PFN_ENTRY)) << 12);
+}
+
+VOID Mm::FreePage(UINT_PTR PhysicalAddress)
+{
+    PFN_NUMBER Pfn = (PhysicalAddress >> 12);
+
+    PFNDB[Pfn].Free = 1;
+    PFNDB[Pfn].PageEntry = FreeList.Head;
+    FreeList.Head = &PFNDB[Pfn];
+    FreeList.PageCount++;
 }
