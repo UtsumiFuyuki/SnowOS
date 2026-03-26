@@ -1,7 +1,7 @@
 [submodule "Limine"]
 	path = Limine
 	url = https://codeberg.org/Limine/Limine
-	branch = v10.x-binary
+	branch = v11.x-binary
 [submodule "limine-protocol"]
 	path = common/include/limine-protocol
 	url = https://codeberg.org/Limine/limine-protocol

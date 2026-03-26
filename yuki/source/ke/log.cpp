@@ -13,11 +13,11 @@ UtsumiFuyuki
 October 30th 2025
 **/
 
-#include "hal/serial.hpp"
 #include <typedefs.hpp>
 #include <cstdarg>
 #include <ke/string.hpp>
 #include <hal/hal.hpp>
+#include <hal/serial.hpp>
 #include <ke/log.hpp>
 
 #define NANOPRINTF_USE_FIELD_WIDTH_FORMAT_SPECIFIERS 1

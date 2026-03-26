@@ -13,8 +13,6 @@ UtsumiFuyuki
 October 28th 2025
 **/
 
-#include <typedefs.hpp>
-#include <cstddef>
 #include <limine.h>
 #include <flanterm.h>
 #include <flanterm_backends/fb.h>
@@ -22,59 +20,61 @@ October 28th 2025
 #include <hal/serial.hpp>
 #include <ke/string.hpp>
 #include <ke/log.hpp>
+#include <ke/spinlock.hpp>
 
 // Limine Stuff
 
-// Set the base revision to 4, this is recommended as this is the latest
-// base revision described by the Limine boot protocol specification.
-// See specification for further info.
-
-namespace {
-
-__attribute__((used, section(".limine_requests")))
-volatile LIMINE_BASE_REVISION(4);
-
+// Limine Base Revision, set to 6, the most recent revision
+namespace
+{
+    __attribute__((used, section(".limine_requests")))
+    volatile UINT64 LimineBaseRevision[] = LIMINE_BASE_REVISION(6);
 }
 
-// The Limine requests can be placed anywhere, but it is important that
-// the compiler does not optimise them away, so, usually, they should
-// be made volatile or equivalent, _and_ they should be accessed at least
-// once or marked as used with the "used" attribute as done here.
+// The Limine requests. Basically tells the bootloader what we want from it :p
 
-namespace {
+namespace
+{
+    __attribute__((used, section(".limine_requests")))
+    volatile limine_bootloader_info_request LimineBootInfoRequest = {
+        .id = LIMINE_BOOTLOADER_INFO_REQUEST_ID,
+        .revision = 0,
+        .response = nullptr
+    };
 
-__attribute__((used, section(".limine_requests")))
-volatile limine_framebuffer_request framebuffer_request = {
-    .id = LIMINE_FRAMEBUFFER_REQUEST,
-    .revision = 0,
-    .response = nullptr
-};
+    __attribute__((used, section(".limine_requests")))
+    volatile limine_framebuffer_request framebuffer_request = {
+        .id = LIMINE_FRAMEBUFFER_REQUEST_ID,
+        .revision = 0,
+        .response = nullptr
+    };
 
-volatile limine_memmap_request LimineMemoryMapRequest = {
-    .id = LIMINE_MEMMAP_REQUEST,
-    .revision = 0,
-    .response = nullptr
-};
+    volatile limine_memmap_request LimineMemoryMapRequest = {
+        .id = LIMINE_MEMMAP_REQUEST_ID,
+        .revision = 0,
+        .response = nullptr
+    };
 
-volatile limine_hhdm_request LimineHhdmRequest = {
-    .id = LIMINE_HHDM_REQUEST,
-    .revision = 0,
-    .response = nullptr
-};
+    volatile limine_hhdm_request LimineHhdmRequest = {
+        .id = LIMINE_HHDM_REQUEST_ID,
+        .revision = 0,
+        .response = nullptr
+    };
 
+    volatile limine_mp_request LimineMpRequest = {
+        .id = LIMINE_MP_REQUEST_ID,
+        .revision = 0,
+        .response = nullptr
+    };
 }
 
-// Finally, define the start and end markers for the Limine requests.
-// These can also be moved anywhere, to any .cpp file, as seen fit.
+namespace
+{
+    __attribute__((used, section(".limine_requests_start")))
+    volatile UINT64 LimineRequestsStartMarker[] = LIMINE_REQUESTS_START_MARKER;
 
-namespace {
-
-__attribute__((used, section(".limine_requests_start")))
-volatile LIMINE_REQUESTS_START_MARKER;
-
-__attribute__((used, section(".limine_requests_end")))
-volatile LIMINE_REQUESTS_END_MARKER;
-
+    __attribute__((used, section(".limine_requests_end")))
+    volatile UINT64 LimineRequestsEndMarker[] = LIMINE_REQUESTS_END_MARKER;
 }
 
 struct flanterm_context* FtCtx;
@@ -115,10 +115,23 @@ VOID HalIdtSetDescriptor(UINT8 Vector, LPVOID Isr, UINT8 Flags) {
     Descriptor->Reserved            = 0;
 }
 
+extern "C" BOOL HalInterruptsEnabled()
+{
+    UINT64 Enabled{};
+    __asm__ volatile (
+                    "pushfq;"
+                    "pop %%rax;"
+                    "shr $9, %%rax;"
+                    "and $1, %%rax;"
+                    "mov %%rax, %0" : "=c"(Enabled));
+    return Enabled;
+}
+
+
 VOID Hal::Init()
 {
     // Ensure the bootloader actually understands our base revision (see spec).
-    if (LIMINE_BASE_REVISION_SUPPORTED == false) {
+    if (LIMINE_BASE_REVISION_SUPPORTED(LimineBaseRevision) == false) {
         Hal::HaltCpu();
     }
 
@@ -144,10 +157,28 @@ VOID Hal::Init()
         NULL, NULL,
         NULL, 0, 0, 1,
         0, 0,
+        0,
         0
     );
 
     Hal::InitializeSerial(COM1);
+}
+
+SPINLOCK Lock{};
+
+VOID CpuStart(limine_mp_info *MpInfo)
+{
+    BOOL IntsEnabled = Ke::SpinlockAcquire(&Lock);
+
+    __asm__ volatile ("lgdt %0" :: "m"(GdtRegister));
+    ReloadSegments();
+    __asm__ volatile ("lidt %0" :: "m"(Idtr));
+
+    Ke::Print("CPU startup complete!\r\n");
+
+    Ke::SpinlockRelease(&Lock, IntsEnabled);
+
+    Hal::HaltCpu();
 }
 
 VOID Hal::PrintString(LPCSTR String)
@@ -183,7 +214,31 @@ VOID Hal::InitCpu()
     }
 
     __asm__ volatile ("lidt %0" :: "m"(Idtr));
-    Ke::Print("Cpu Initialized!\n");
+    Ke::Print("CPU Initialized!\r\n");
+}
+
+VOID Hal::InitSmp()
+{
+    limine_mp_response *MpResponse = LimineMpRequest.response;
+    if (MpResponse->cpu_count == 1)
+    {
+        Ke::Print("Running on a Uniprocesser System!\r\n");
+        return;
+    }
+
+    Ke::Print("Running with %llu processors\r\n", MpResponse->cpu_count);
+
+    VOID (*CpuStartAddress)(limine_mp_info *MpInfo) = CpuStart;
+
+    for (UINT64 i = 1; i < MpResponse->cpu_count; i++)
+    {
+        MpResponse->cpus[i]->goto_address = CpuStartAddress;
+    }
+}
+
+LPCSTR Hal::BlVersion()
+{
+    return LimineBootInfoRequest.response->version;
 }
 
 UINT64 Hal::RetrieveHhdmOffset()

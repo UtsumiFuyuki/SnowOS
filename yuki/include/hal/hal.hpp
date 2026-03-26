@@ -52,11 +52,18 @@ typedef struct _IDT_ENTRY
 
 namespace Hal
 {
-VOID Init();
-VOID PrintString(LPCSTR String);
-VOID HaltCpu();
-VOID InitCpu();
-UINT64 RetrieveHhdmOffset();
+    VOID Init();
+    VOID PrintString(LPCSTR String);
+    VOID HaltCpu();
+    VOID InitCpu();
 
-limine_memmap_response *RetrieveMemoryMap();
+    // Starts up the other CPUs in the system
+    VOID InitSmp();
+
+    UINT64 RetrieveHhdmOffset();
+    limine_memmap_response *RetrieveMemoryMap();
+
+    LPCSTR BlVersion();
 }
+
+extern "C" BOOL HalInterruptsEnabled();

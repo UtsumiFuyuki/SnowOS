@@ -1,7 +1,21 @@
+/**
+Snow Operating System
+Copyright (c) UtsumiFuyuki 2025, 2026
+ 
+File: mm/mm.hpp
+
+Description:
+This file contains functions declarations for the
+physical memory allocator
+
+Author:
+UtsumiFuyuki
+March 23rd 2026
+**/
+
 #pragma once
 
 #include <typedefs.hpp>
-#include <mm/freelist.hpp>
 #include <mm/early_alloc.hpp>
 
 typedef ULONG64 PFN_NUMBER;

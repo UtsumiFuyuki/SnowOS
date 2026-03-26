@@ -2,7 +2,7 @@
 Snow Operating System
 Copyright (c) UtsumiFuyuki 2025, 2026
  
-File: mm/mminit.cpp
+File: mm/physical.cpp
 
 Description:
 This file contains the physical page allocator

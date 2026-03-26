@@ -1,6 +1,6 @@
 /**
 Snow Operating System
-Copyright (c) UtsumiFuyuki 2025
+Copyright (c) UtsumiFuyuki 2025, 2026
  
 File: ke/kernel.cpp
 
@@ -45,13 +45,13 @@ extern "C" VOID KeMain(LPVOID SnowBootInfo)
     KeRunConstructors();
 
     Hal::Init();
-    Hal::PrintString("Snow Operating System (c) 2025, 2026 UtsumiFuyuki\n");
-    Ke::Print("Yuki Kernel Version %d.%d.%d\n", YUKI_VERSION_MAJOR, YUKI_VERSION_MINOR, YUKI_VERSION_PATCH);
+    Hal::PrintString("Snow Operating System (c) 2025, 2026 UtsumiFuyuki\r\n");
+    Ke::Print("Yuki Kernel Version %d.%d.%d\r\n", YUKI_VERSION_MAJOR, YUKI_VERSION_MINOR, YUKI_VERSION_PATCH);
     Ke::Print("Booted by: ");
     
     if (SnowBootInfo == nullptr)
     {
-        Ke::Print("Limine\r\n\r\n");
+        Ke::Print("Limine %s\r\n\r\n", Hal::BlVersion());
     }
     else
     {
@@ -60,14 +60,14 @@ extern "C" VOID KeMain(LPVOID SnowBootInfo)
 
     Hal::InitCpu();
     Mm::EarlyInit();
-
     Hal::InitializePaging();
     Mm::Initialize();
 
     UINT_PTR Test = Mm::AllocatePage();
     Mm::FreePage(Test);
 
-    Ke::Log(__FILE__, "Reached end of KeMain!\r\n");
+    // There's nothing for the other CPUs to do, in fact they halt in this function, but init them anyways :p
+    Hal::InitSmp();
 
     // We're done, just hang...
     Hal::HaltCpu();

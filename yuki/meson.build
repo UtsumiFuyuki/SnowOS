@@ -1,6 +1,7 @@
 incdirs = include_directories(
     '../common/include/freestnd-c-hdrs/x86_64/include',
     '../common/include/freestnd-cxx-hdrs/x86_64/include',
+    '../common/include/limine-protocol/include',
     'source/hal/flanterm/src',
     '../Limine',
     'include',
@@ -16,9 +17,10 @@ sources = files(
     'source/hal/isr.asm',
     'source/hal/flanterm/src/flanterm.c',
     'source/hal/flanterm/src/flanterm_backends/fb.c',
-    'source/hal/x64/paging.cpp',
     'source/hal/paging.cpp',
     'source/hal/serial.cpp',
+    'source/hal/x64/paging.cpp',
+    'source/hal/x64/cpuid.cpp',
     'source/mm/early_alloc.cpp',
     'source/mm/physical.cpp'
 )
@@ -27,7 +29,7 @@ add_project_arguments(
     '--target=x86_64-unknown-windows-gnu',
     '-nostdinc',
     '-ffreestanding',
-    '-DLIMINE_API_REVISION=4',
+    '-DLIMINE_API_REVISION=6',
     '-fno-stack-protector',
     '-fno-stack-check',
     '-fno-PIC',
