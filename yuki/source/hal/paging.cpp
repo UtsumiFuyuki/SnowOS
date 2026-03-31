@@ -1,6 +1,19 @@
-#include "typedefs.hpp"
+/**
+Snow Operating System
+Copyright (c) UtsumiFuyuki 2025, 2026
+ 
+File: hal/paging.cpp
+
+Description:
+This file contains amd64 specific paging functions
+
+Author:
+UtsumiFuyuki
+March 20th 2026
+**/
+
 #include <hal/paging.hpp>
-#include <hal/x64/paging.hpp>
+#include <hal/amd64/paging.hpp>
 #include <mm/early_alloc.hpp>
 
 VOID Hal::InitializePaging()
@@ -53,6 +66,20 @@ VOID Hal::MapPages(UINT_PTR PhysicalAddress, UINT_PTR VirtualAddress, UINT64 Len
 
     #if defined (__x86_64__)
             Hal::X64::MapPages(PhysicalAddress, VirtualAddress, Length, Flags);
+    #endif
+}
+
+VOID Hal::UnmapPage(UINT_PTR VirtualAddress)
+{
+    #if defined (__x86_64__)
+            Hal::X64::UnmapPage(VirtualAddress);
+    #endif
+}
+
+VOID Hal::UnmapPages(UINT_PTR VirtualAddress, UINT64 Length)
+{
+    #if defined (__x86_64__)
+            Hal::X64::UnmapPages(VirtualAddress, Length);
     #endif
 }
 

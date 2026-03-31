@@ -31,6 +31,8 @@ namespace Hal
         PAGE_TABLE_ENTRY CreateNewEntry(UINT64 Flags);
         VOID MapPage(UINT_PTR PhysicalAddress, UINT_PTR VirtualAddress, UINT64 Flags);
         VOID MapPages(UINT_PTR PhysicalAddress, UINT_PTR VirtualAddress, UINT64 Length, UINT64 Flags); 
+        VOID UnmapPage(UINT_PTR VirtualAddress);
+        VOID UnmapPages(UINT_PTR VirtualAddress, UINT64 Length);
         UINT_PTR VirtualToPhysical(UINT64 VirtualAddress);
     }
 }

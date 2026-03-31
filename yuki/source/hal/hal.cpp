@@ -66,6 +66,12 @@ namespace
         .revision = 0,
         .response = nullptr
     };
+
+    volatile limine_rsdp_request LimineRsdpRequest = {
+        .id = LIMINE_RSDP_REQUEST_ID,
+        .revision = 0,
+        .response = nullptr
+    };
 }
 
 namespace
@@ -250,4 +256,9 @@ limine_memmap_response *Hal::RetrieveMemoryMap()
 {
     limine_memmap_response *MemoryMap = LimineMemoryMapRequest.response;
     return MemoryMap;
+}
+
+UINT_PTR Hal::RetrieveRsdpPhysicalAddress()
+{
+    return reinterpret_cast<UINT_PTR>(LimineRsdpRequest.response->address) - Hal::RetrieveHhdmOffset();
 }

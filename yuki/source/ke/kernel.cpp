@@ -13,12 +13,12 @@ UtsumiFuyuki
 October 28th 2025
 **/
 
-#include <typedefs.hpp>
 #include <hal/hal.hpp>
 #include <hal/paging.hpp>
 #include <hal/serial.hpp>
 #include <ke/log.hpp>
 #include <mm/mm.hpp>
+#include <uacpi/uacpi.h>
 
 #define YUKI_VERSION_MAJOR 0
 #define YUKI_VERSION_MINOR 1
@@ -67,7 +67,12 @@ extern "C" VOID KeMain(LPVOID SnowBootInfo)
     Mm::FreePage(Test);
 
     // There's nothing for the other CPUs to do, in fact they halt in this function, but init them anyways :p
-    Hal::InitSmp();
+    //Hal::InitSmp();
+
+    Hal::MapPages(0xCAFEB000, 0xDEADB000, 0x8000, PAGE_WRITE);
+    Hal::UnmapPages(0xDEADB000, 0x7000);
+
+    Mm::InitializeVmm();
 
     // We're done, just hang...
     Hal::HaltCpu();

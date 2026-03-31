@@ -17,6 +17,10 @@ March 23rd 2026
 
 #include <typedefs.hpp>
 #include <mm/early_alloc.hpp>
+#include <utils/list.hpp>
+
+#define VMEM_SEGMENT_FREE 0x1
+#define VMEM_SEGMENT_SPAN 0x2
 
 typedef ULONG64 PFN_NUMBER;
 
@@ -40,4 +44,5 @@ namespace Mm
     VOID Initialize();
     UINT_PTR AllocatePage();
     VOID FreePage(UINT_PTR PhysicalAddress);
+    VOID InitializeVmm();
 }

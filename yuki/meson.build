@@ -4,7 +4,7 @@ incdirs = include_directories(
     '../common/include/limine-protocol/include',
     'source/hal/flanterm/src',
     '../Limine',
-    'include',
+    'include'
 )
 
 sources = files(
@@ -12,6 +12,7 @@ sources = files(
     'source/ke/interrupts.cpp',
     'source/ke/string.cpp',
     'source/ke/log.cpp',
+    'source/ke/kernel_api.cpp',
     'source/hal/hal.cpp',
     'source/hal/gdt.asm',
     'source/hal/isr.asm',
@@ -19,10 +20,11 @@ sources = files(
     'source/hal/flanterm/src/flanterm_backends/fb.c',
     'source/hal/paging.cpp',
     'source/hal/serial.cpp',
-    'source/hal/x64/paging.cpp',
-    'source/hal/x64/cpuid.cpp',
+    'source/hal/amd64/paging.cpp',
     'source/mm/early_alloc.cpp',
-    'source/mm/physical.cpp'
+    'source/mm/physical.cpp',
+    'source/mm/vmem.cpp',
+    'source/mm/vm_init.cpp'
 )
 
 add_project_arguments(
@@ -30,6 +32,7 @@ add_project_arguments(
     '-nostdinc',
     '-ffreestanding',
     '-DLIMINE_API_REVISION=6',
+    '-DUACPI_BAREBONES_MODE',
     '-fno-stack-protector',
     '-fno-stack-check',
     '-fno-PIC',
@@ -48,7 +51,7 @@ add_project_arguments(
     '-MP',
     '-g',
 
-    language: 'cpp'
+    language: ['cpp', 'c']
 )
 
 add_project_arguments(
@@ -68,7 +71,14 @@ add_project_link_arguments(
     '-Wl,/debug',
     '-static',
 
-    language: 'cpp'
+    language: ['cpp', 'c']
 )
 
-executable('yuki.exe', sources, include_directories: incdirs)
+uacpi = subproject('uacpi')
+
+uacpi_sources = uacpi.get_variable('sources')
+sources += uacpi_sources
+
+uacpi_includes = uacpi.get_variable('includes')
+
+executable('yuki.exe', sources, include_directories: [incdirs, uacpi_includes])

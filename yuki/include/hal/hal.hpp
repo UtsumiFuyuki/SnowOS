@@ -62,6 +62,7 @@ namespace Hal
 
     UINT64 RetrieveHhdmOffset();
     limine_memmap_response *RetrieveMemoryMap();
+    UINT_PTR RetrieveRsdpPhysicalAddress();
 
     LPCSTR BlVersion();
 }

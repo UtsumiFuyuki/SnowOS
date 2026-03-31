@@ -44,8 +44,8 @@ typedef struct
 
 __attribute__((noreturn)) extern "C" VOID KeInterruptHandler(InterruptFrame* StackFrame)
 {
-    Ke::Print("\n" ANSI_BRIGHT_RED "Kernel Panic!!!\n");
-    Ke::Print("Stack Frame at: 0x%llX\n\n", StackFrame);
+    Ke::Print("\n" ANSI_BRIGHT_RED "Kernel Panic!!!\r\n");
+    Ke::Print("Stack Frame at: 0x%llX\r\n\r\n", StackFrame);
 
     Ke::Print("Exception: ");
 
@@ -83,26 +83,26 @@ __attribute__((noreturn)) extern "C" VOID KeInterruptHandler(InterruptFrame* Sta
             break;
     }
 
-    Ke::Print(" Error Code: 0x%llX\n\nRSP: 0x%llX | RFLAGS: 0x%llX\nCS: 0x%llX | RIP: 0x%llX\n",
+    Ke::Print(" Error Code: 0x%llX\r\n\r\nRSP: 0x%llX | RFLAGS: 0x%llX\r\nCS: 0x%llX | RIP: 0x%llX\r\n",
     StackFrame->ErrorCode,
     StackFrame->Rsp,
     StackFrame->Rflags,
     StackFrame->Cs,
     StackFrame->Rip);
 
-    Ke::Print("RAX: 0x%llX | RBX: 0x%llX | RCX: 0x%llX | RDX: 0x%llX\n",
+    Ke::Print("RAX: 0x%llX | RBX: 0x%llX | RCX: 0x%llX | RDX: 0x%llX\r\n",
     StackFrame->Rax,
     StackFrame->Rbx,
     StackFrame->Rcx,
     StackFrame->Rdx);
 
-    Ke::Print("RBP: 0x%llX | RDI: 0x%llX | RSI: 0x%llX | R8: 0x%llX\n",
+    Ke::Print("RBP: 0x%llX | RDI: 0x%llX | RSI: 0x%llX | R8: 0x%llX\r\n",
     StackFrame->Rbp,
     StackFrame->Rdi,
     StackFrame->Rsi,
     StackFrame->R8);
 
-    Ke::Print("R9: 0x%llX | R10: 0x%llX | R11: 0x%llX | R12: 0x%llX | R13: 0x%llX | R14: 0x%llX | R15: 0x%llX\n",
+    Ke::Print("R9: 0x%llX | R10: 0x%llX | R11: 0x%llX | R12: 0x%llX | R13: 0x%llX | R14: 0x%llX | R15: 0x%llX\r\n",
     StackFrame->R9,
     StackFrame->R10,
     StackFrame->R11,
