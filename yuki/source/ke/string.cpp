@@ -17,8 +17,9 @@ October 30th 2025
 #include <typedefs.hpp>
 #include <ke/string.hpp>
 
-extern "C" {
-
+extern "C"
+{
+    
     LPVOID memcpy(LPVOID __restrict dest, LPCVOID __restrict src, UINT64 n) {
         UINT8 *__restrict pdest = static_cast<UINT8 *__restrict>(dest);
         const UINT8 *__restrict psrc = static_cast<const UINT8 *__restrict>(src);
@@ -30,6 +31,7 @@ extern "C" {
         return dest;
     }
     
+    // TODO: Use stosb
     LPVOID memset(LPVOID s, INT c, UINT64 n) {
         UINT8 *p = static_cast<UINT8 *>(s);
     

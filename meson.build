@@ -8,6 +8,7 @@ project(
         'buildtype=debugoptimized',
         'warning_level=2',
     ],
+    version: '0.1.0',
 )
 
 subdir('yuki')

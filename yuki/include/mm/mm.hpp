@@ -19,9 +19,6 @@ March 23rd 2026
 #include <mm/early_alloc.hpp>
 #include <utils/list.hpp>
 
-#define VMEM_SEGMENT_FREE 0x1
-#define VMEM_SEGMENT_SPAN 0x2
-
 typedef ULONG64 PFN_NUMBER;
 
 typedef struct _PFN_ENTRY
