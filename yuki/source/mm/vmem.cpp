@@ -12,106 +12,93 @@ UtsumiFuyuki
 March 28th 2026
 **/
 
-#include "utils/list.hpp"
 #include <mm/mm.hpp>
 #include <mm/vmem.hpp>
 #include <ke/log.hpp>
 #include <ke/string.hpp>
 
 // Statically allocated ll nodes for bootstrap
-LL_NODE<VMEM_BOUNDARY_TAG> InitNodes[16]{};
-size_t NextFreeNode{};
+LL_NODE<VMEM_BOUNDARY_TAG> initNodes[16]{};
+size_t nextFreeNode{};
 
-uint64_t Pow(uint64_t Base, uint64_t Exponent)
-{
-    uint64_t Ret{1};
+uint64_t pow(uint64_t base, uint64_t exponent) {
+    uint64_t ret{1};
 
-    for (size_t i = 1; i <= Exponent; i++)
-    {
-        Ret *= Base;
+    for (size_t i = 1; i <= exponent; i++) {
+        ret *= base;
     }
-    return Ret;
+    return ret;
 }
 
-INT Mm::VmemCreateArena(PVMEM_ARENA Out,
-                    LPCSTR Name,
-                    UINT_PTR Base,
-                    UINT64 Size,
-                    UINT64 Quantum,
-                    UINT_PTR (*AllocFunction)(PVMEM_ARENA, UINT64),
-                    VOID (*FreeFunction)(_VMEM_ARENA*, VOID*, UINT64),
-                    PVMEM_ARENA Source)
-{
-    Out->Name = Name;
-    Out->Base = Base;
-    Out->Size = Size;
-    Out->Quantum = Quantum;
-    Out->AllocFunction = AllocFunction;
-    Out->FreeFunction = FreeFunction;
-    Out->Source = Source;
+int mm::vmemCreateArena(PVMEM_ARENA arena,
+                    const char *name,
+                    uintptr_t base,
+                    size_t size,
+                    uint64_t quantum,
+                    uintptr_t (*allocFunction)(PVMEM_ARENA, size_t),
+                    void (*freeFunction)(_VMEM_ARENA*, void*, size_t),
+                    PVMEM_ARENA source) {
+    arena->name = name;
+    arena->base = base;
+    arena->size = size;
+    arena->quantum = quantum;
+    arena->allocFunction = allocFunction;
+    arena->freeFunction = freeFunction;
+    arena->source = source;
 
-    InitNodes[NextFreeNode].Data = {.Type = VMEM_SEGMENT_SPAN, .SegmentStart = Base, .SegmentSize = Size};
-    Out->SegmentList.Push(&InitNodes[NextFreeNode]);
-    NextFreeNode++;
+    initNodes[nextFreeNode].data = {.type = VMEM_SEGMENT_SPAN, .segmentBase = base, .segmentSize = size};
+    arena->segmentList.push(&initNodes[nextFreeNode]);
+    nextFreeNode++;
 
-    InitNodes[NextFreeNode].Data = {.Type = VMEM_SEGMENT_FREE, .SegmentStart = Base, .SegmentSize = Size};
-    Out->SegmentList.Push(&InitNodes[NextFreeNode]);
+    initNodes[nextFreeNode].data = {.type = VMEM_SEGMENT_FREE, .segmentBase = base, .segmentSize = size};
+    arena->segmentList.push(&initNodes[nextFreeNode]);
 
-    for (int i = 0; i < 64; i++)
-    {
-        if (Pow(2, i + 1) >= Size)
-        {
-            Ke::Log(__FILE__, "Size 0x%llX goes onto freelist %llu\r\n", Size, i);
-            Out->Freelists[i].Push(&InitNodes[NextFreeNode]);
+    for (size_t i = 0; i < 64; i++) {
+        if (pow(2, i + 1) >= size) {
+            ke::log(__FILE__, "Size 0x%llX goes onto freelist %llu\r\n", size, i);
+            arena->freelists[i].push(&initNodes[nextFreeNode]);
             break;
         }
     }
-    NextFreeNode++;
+    nextFreeNode++;
 
     return 0;
 }
 
 // TODO: Implement NEXTFIT and BESTFIT
-UINT_PTR Mm::VmemAllocate(PVMEM_ARENA Arena, UINT64 Size)
-{
-    if (Arena == nullptr)
+uintptr_t mm::vmemAllocate(PVMEM_ARENA arena, size_t size) {
+    if (arena == nullptr)
         return 0;
 
     // TODO: Change this to properly round to the quantum
-    Size *= Arena->Quantum;
+    size *= arena->quantum;
 
-    for (size_t n = 0; n < 64; n++)
-    {
-        if (!Arena->Freelists[n].Empty() && Pow(2, n + 1) >= Size)
-        {
-            auto *Head = Arena->Freelists[n].GetHead();
-            Head->Data.SegmentSize -= Size;
+    for (size_t n = 0; n < 64; n++) {
+        if (!arena->freelists[n].empty() && pow(2, n + 1) >= size) {
+            auto *head = arena->freelists[n].getHead();
+            head->data.segmentSize -= size;
 
-            if (Head->Data.SegmentSize == 0)
-            {
-                Arena->Freelists[n].Remove(Head);
+            if (head->data.segmentSize == 0) {
+                arena->freelists[n].remove(head);
             }
 
-            for (auto *CurrentNode = Arena->SegmentList.GetHead(); CurrentNode != nullptr; CurrentNode = CurrentNode->Next)
-            {
+            for (auto *currentNode = arena->segmentList.getHead(); currentNode != nullptr; currentNode = currentNode->next) {
                 // Find corresponding node in segment list
-                if (CurrentNode->Data.SegmentStart == Head->Data.SegmentStart && CurrentNode->Data.Type != VMEM_SEGMENT_SPAN)
-                {
-                    if (CurrentNode->Data.SegmentSize == Size)
-                    {
-                        CurrentNode->Data.Type = VMEM_SEGMENT_ALLOCATED;
-                        return CurrentNode->Data.SegmentStart;
+                if (currentNode->data.segmentBase == head->data.segmentBase && currentNode->data.type != VMEM_SEGMENT_SPAN) {
+                    if (currentNode->data.segmentSize == size) {
+                        currentNode->data.type = VMEM_SEGMENT_ALLOCATED;
+                        return currentNode->data.segmentBase;
                     }
-                    auto *AllocatedNode = &InitNodes[NextFreeNode];
-                    AllocatedNode->Data.SegmentSize = Size;
-                    AllocatedNode->Data.SegmentStart = CurrentNode->Data.SegmentStart;
-                    AllocatedNode->Data.Type = VMEM_SEGMENT_ALLOCATED;
+                    auto *allocatedNode = &initNodes[nextFreeNode];
+                    allocatedNode->data.segmentSize = size;
+                    allocatedNode->data.segmentBase = currentNode->data.segmentBase;
+                    allocatedNode->data.type = VMEM_SEGMENT_ALLOCATED;
 
-                    CurrentNode->Data.SegmentStart += Size;
+                    currentNode->data.segmentBase += size;
 
-                    Arena->SegmentList.Insert(CurrentNode, AllocatedNode);
-                    NextFreeNode++;
-                    return AllocatedNode->Data.SegmentStart;
+                    arena->segmentList.insert(currentNode, allocatedNode);
+                    nextFreeNode++;
+                    return allocatedNode->data.segmentBase;
                 }
             }
         }

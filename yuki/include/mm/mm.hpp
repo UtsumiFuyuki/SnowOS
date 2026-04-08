@@ -15,31 +15,30 @@ March 23rd 2026
 
 #pragma once
 
-#include <typedefs.hpp>
 #include <mm/early_alloc.hpp>
 #include <utils/list.hpp>
 
-typedef ULONG64 PFN_NUMBER;
+typedef uint64_t PFN_NUMBER;
 
 typedef struct _PFN_ENTRY
 {
-    UINT64 Free;
+    uint64_t free;
 
     // Points to another PFNdb entry, used to build the Free List
-    _PFN_ENTRY *PageEntry;
+    _PFN_ENTRY *pageEntry;
 } PFN_ENTRY, *PPFN_ENTRY;
 
 // A list of PFNdb entries
 typedef struct _PAGE_LIST
 {
-    UINT64 PageCount;
-    PPFN_ENTRY Head;
+    uint64_t pageCount;
+    PPFN_ENTRY head;
 } PAGE_LIST, *PPAGE_LIST;
 
-namespace Mm
+namespace mm
 {
-    VOID Initialize();
-    UINT_PTR AllocatePage();
-    VOID FreePage(UINT_PTR PhysicalAddress);
-    VOID InitializeVmm();
+    void initialize();
+    uintptr_t allocatePage();
+    void freePage(uintptr_t physicalAddress);
+    void initializeVmm();
 }

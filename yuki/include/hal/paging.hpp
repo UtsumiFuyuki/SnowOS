@@ -1,18 +1,17 @@
 #pragma once
 
-#include <typedefs.hpp>
+#include <cstdint>
 
 #define PAGE_WRITE 0x1
 #define PAGE_USER 0x2
 #define PAGE_NO_EXECUTE 0x4
 
-namespace Hal
-{
-    VOID InitializePaging();
-    VOID MapPage(UINT_PTR PhysicalAddress, UINT_PTR VirtualAddress, UINT_PTR Flags);
-    VOID MapPages(UINT_PTR PhysicalAddress, UINT_PTR VirtualAddress, UINT64 Length, UINT64 Flags);
-    VOID UnmapPage(UINT_PTR VirtualAddress);
-    VOID UnmapPages(UINT_PTR VirtualAddress, UINT64 Length);
-    UINT_PTR VirtualToPhysical(UINT_PTR VirtualAddress);
-    UINT64 GeneralFlagsToArchSpecific(UINT64 Flags);
+namespace hal {
+    void initializePaging();
+    void mapPage(uintptr_t physicalAddress, uintptr_t virtualAddress, uintptr_t flags);
+    void mapPages(uintptr_t physicalAddress, uintptr_t virtualAddress, uint64_t length, uint64_t flags);
+    void unmapPage(uintptr_t virtualAddress);
+    void unmapPages(uintptr_t virtualAddress, uint64_t Length);
+    uintptr_t virtualToPhysical(uintptr_t virtualAddress);
+    uint64_t generalFlagsToArchSpecific(uint64_t flags);
 }

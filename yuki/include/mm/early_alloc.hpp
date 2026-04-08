@@ -15,17 +15,15 @@ March 19th 2026
 
 #pragma once
 
-#include <typedefs.hpp>
+#include <cstdint>
 
-typedef struct _EARLY_ALLOC_REGION
-{
-    UINT_PTR Base;
-    UINT64 Size;
+typedef struct _EARLY_ALLOC_REGION {
+    uintptr_t base;
+    uint64_t size;
 } EARLY_ALLOC_REGION;
 
-namespace Mm
-{
-    VOID EarlyInit();
-    UINT_PTR EarlyAllocatePage();
-    PVOID MapPhysicalAddress(UINT64 PhysicalAddress, UINT64 Length);
+namespace mm {
+    void earlyInit();
+    uintptr_t earlyAllocatePage();
+    void *mapPhysicalAddress(uint64_t physicalAddress, uint64_t length);
 }

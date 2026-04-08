@@ -4,11 +4,9 @@
 #include <uacpi/kernel_api.h>
 
 // Returns the PHYSICAL address of the RSDP structure via *out_rsdp_address.
-uacpi_status uacpi_kernel_get_rsdp(uacpi_phys_addr *out_rsdp_address)
-{
-    *out_rsdp_address = reinterpret_cast<uacpi_phys_addr>(Hal::RetrieveRsdpPhysicalAddress());
-    if (*out_rsdp_address == 0)
-    {
+uacpi_status uacpi_kernel_get_rsdp(uacpi_phys_addr *out_rsdp_address) {
+    *out_rsdp_address = reinterpret_cast<uacpi_phys_addr>(hal::retrieveRsdpPhysicalAddress());
+    if (*out_rsdp_address == 0) {
         return UACPI_STATUS_INTERNAL_ERROR;
     }
     return UACPI_STATUS_OK;
@@ -38,9 +36,8 @@ uacpi_status uacpi_kernel_get_rsdp(uacpi_phys_addr *out_rsdp_address)
  *              resulting virtual address 0xF000 + 0xABC => 0xFABC. Return it
  *              to uACPI.
  */
-void *uacpi_kernel_map(uacpi_phys_addr addr, uacpi_size len)
-{
-    return Mm::MapPhysicalAddress(addr, len);
+void *uacpi_kernel_map(uacpi_phys_addr addr, uacpi_size len) {
+    //return mm::mapPhysicalAddress(addr, len);
 }
 
 /**
@@ -51,32 +48,29 @@ void *uacpi_kernel_map(uacpi_phys_addr addr, uacpi_size len)
  *       virtual address originally returned by the VMM for this mapping
  *       as well as its true length.
  */
-void uacpi_kernel_unmap(void *addr, uacpi_size len)
-{
-    Ke::Log(__FILE__, "Uh oh spaghettio! We're bump allocating VAs, can't free it :p\n");
+void uacpi_kernel_unmap(void *addr, uacpi_size len) {
+    ke::log(__FILE__, "Uh oh spaghettio! We're bump allocating VAs, can't free it :p\n");
 }
 
-void uacpi_kernel_log(uacpi_log_level LogLevel, const uacpi_char* String)
-{
-    LPCSTR LogString{};
-    switch (LogLevel)
-    {
+void uacpi_kernel_log(uacpi_log_level logLevel, const uacpi_char *string) {
+    const char *logString{};
+    switch (logLevel) {
         case (UACPI_LOG_INFO):
-            LogString = "uACPI Info";
+            logString = "uACPI Info";
             break;
         case (UACPI_LOG_ERROR):
-            LogString = ANSI_BRIGHT_RED "uACPI Error" ANSI_RESET;
+            logString = ANSI_BRIGHT_RED "uACPI Error" ANSI_RESET;
             break;
         case (UACPI_LOG_WARN):
-            LogString = ANSI_BRIGHT_YELLOW "uACPI Warn" ANSI_RESET;
+            logString = ANSI_BRIGHT_YELLOW "uACPI Warn" ANSI_RESET;
             break;
         case (UACPI_LOG_DEBUG):
-            LogString = "uACPI Debug";
+            logString = "uACPI Debug";
             break;
         case (UACPI_LOG_TRACE):
-            LogString = "uACPI Trace";
+            logString = "uACPI Trace";
             break;
     }
 
-    Ke::Log(LogString, String);
+    ke::log(logString, string);
 }

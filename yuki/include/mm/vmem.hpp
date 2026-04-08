@@ -14,7 +14,7 @@ March 31rd 2026
 
 #pragma once
 
-#include <typedefs.hpp>
+#include <cstdint>
 #include <utils/list.hpp>
 
 #define VMEM_SEGMENT_SPAN 0
@@ -23,37 +23,37 @@ March 31rd 2026
 
 typedef struct _VMEM_BOUNDARY_TAG
 {
-    UINT8 Type;
-    UINT_PTR SegmentStart;
-    UINT64 SegmentSize;
+    uint8_t type;
+    uintptr_t segmentBase;
+    size_t segmentSize;
 } VMEM_BOUNDARY_TAG, *PVMEM_BOUNDARY_TAG;
 
 typedef struct _VMEM_ARENA
 {
-    LPCSTR Name;
-    UINT_PTR Base;
-    UINT64 Size;
-    UINT64 Quantum;
-    UINT_PTR (*AllocFunction)(_VMEM_ARENA*, UINT64);
-    VOID (*FreeFunction)(_VMEM_ARENA*, VOID*, UINT64);
-    _VMEM_ARENA *Source;
+    const char *name;
+    uintptr_t base;
+    size_t size;
+    uint64_t quantum;
+    uintptr_t (*allocFunction)(_VMEM_ARENA*, size_t);
+    void (*freeFunction)(_VMEM_ARENA*, void*, size_t);
+    _VMEM_ARENA *source;
     // TODO: Implement Quantum Caching
-    LIST<VMEM_BOUNDARY_TAG> SegmentList;
+    LIST<VMEM_BOUNDARY_TAG> segmentList;
     // TODO: Add hash allocation chain
-    LIST<VMEM_BOUNDARY_TAG> Freelists[64];
+    LIST<VMEM_BOUNDARY_TAG> freelists[64];
 } VMEM_ARENA, *PVMEM_ARENA;
 
-namespace Mm
+namespace mm
 {
-    INT VmemCreateArena(PVMEM_ARENA Arena,
-                    LPCSTR Name,
-                    UINT_PTR Base,
-                    UINT64 Size,
-                    UINT64 Quantum,
-                    UINT_PTR (*AllocFunction)(PVMEM_ARENA, UINT64),
-                    VOID (*FreeFunction)(_VMEM_ARENA*, VOID*, UINT64),
-                    PVMEM_ARENA Source);
+    int vmemCreateArena(PVMEM_ARENA arena,
+                    const char *name,
+                    uintptr_t base,
+                    size_t size,
+                    uint64_t quantum,
+                    uintptr_t (*allocFunction)(PVMEM_ARENA, size_t),
+                    void (*freeFunction)(_VMEM_ARENA*, void*, size_t),
+                    PVMEM_ARENA source);
 
-    UINT_PTR VmemAllocate(PVMEM_ARENA Arena, UINT64 Size);
-    VOID VmemFree(PVMEM_ARENA Arena, UINT_PTR Address, UINT64 Size);
+    uintptr_t vmemAllocate(PVMEM_ARENA arena, size_t size);
+    void vmemFree(PVMEM_ARENA arena, uintptr_t address, size_t size);
 };

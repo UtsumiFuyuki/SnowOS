@@ -16,33 +16,28 @@ March 20th 2026
 #include <hal/amd64/paging.hpp>
 #include <mm/early_alloc.hpp>
 
-VOID Hal::InitializePaging()
-{
+void hal::initializePaging() {
     #if defined (__x86_64__)
-            Hal::X64::InitializePaging();
+            hal::x64::initializePaging();
     #endif
 }
 
-UINT64 Hal::GeneralFlagsToArchSpecific(UINT64 Flags)
-{
-    UINT64 ArchFlags{};
+uint64_t hal::generalFlagsToArchSpecific(uint64_t flags) {
+    uint64_t ArchFlags{};
 
-    if (Flags & PAGE_WRITE)
-    {
+    if (flags & PAGE_WRITE) {
         #if defined (__x86_64__)
             ArchFlags |= PTE_WRITE;
         #endif
     }
 
-    if (Flags & PAGE_USER)
-    {
+    if (flags & PAGE_USER) {
         #if defined (__x86_64__)
             ArchFlags |= PTE_USER;
         #endif
     }
 
-    if (Flags & PAGE_NO_EXECUTE)
-    {
+    if (flags & PAGE_NO_EXECUTE) {
         #if defined (__x86_64__)
             ArchFlags |= PTE_EXECUTE_DISABLE;
         #endif
@@ -51,42 +46,37 @@ UINT64 Hal::GeneralFlagsToArchSpecific(UINT64 Flags)
     return ArchFlags;
 }
 
-VOID Hal::MapPage(UINT_PTR PhysicalAddress, UINT_PTR VirtualAddress, UINT64 Flags)
-{
-    Flags = Hal::GeneralFlagsToArchSpecific(Flags);
+void hal::mapPage(uintptr_t physicalAddress, uintptr_t virtualAddress, uint64_t flags) {
+    flags = hal::generalFlagsToArchSpecific(flags);
 
     #if defined (__x86_64__)
-            Hal::X64::MapPage(PhysicalAddress, VirtualAddress, Flags);
+            hal::x64::mapPage(physicalAddress, virtualAddress, flags);
     #endif
 }
 
-VOID Hal::MapPages(UINT_PTR PhysicalAddress, UINT_PTR VirtualAddress, UINT64 Length, UINT64 Flags)
-{
-    Flags = Hal::GeneralFlagsToArchSpecific(Flags);
+void hal::mapPages(uintptr_t physicalAddress, uintptr_t virtualAddress, uint64_t Length, uint64_t Flags) {
+    Flags = hal::generalFlagsToArchSpecific(Flags);
 
     #if defined (__x86_64__)
-            Hal::X64::MapPages(PhysicalAddress, VirtualAddress, Length, Flags);
+            hal::x64::mapPages(physicalAddress, virtualAddress, Length, Flags);
     #endif
 }
 
-VOID Hal::UnmapPage(UINT_PTR VirtualAddress)
-{
+void hal::unmapPage(uintptr_t virtualAddress) {
     #if defined (__x86_64__)
-            Hal::X64::UnmapPage(VirtualAddress);
+            hal::x64::unmapPage(virtualAddress);
     #endif
 }
 
-VOID Hal::UnmapPages(UINT_PTR VirtualAddress, UINT64 Length)
-{
+void hal::unmapPages(uintptr_t virtualAddress, uint64_t Length) {
     #if defined (__x86_64__)
-            Hal::X64::UnmapPages(VirtualAddress, Length);
+            hal::x64::unmapPages(virtualAddress, Length);
     #endif
 }
 
-UINT_PTR Hal::VirtualToPhysical(UINT_PTR VirtualAddress)
-{
+uintptr_t hal::virtualToPhysical(uintptr_t virtualAddress) {
     #if defined (__x86_64__)
-        return Hal::X64::VirtualToPhysical(VirtualAddress);
+        return hal::x64::virtualToPhysical(virtualAddress);
     #endif
     return 0;
 }

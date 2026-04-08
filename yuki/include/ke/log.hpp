@@ -15,8 +15,6 @@ October 30th 2025
 
 #pragma once
 
-#include <typedefs.hpp>
-
 #define ANSI_RESET         "\033[0m"
 #define ANSI_BLACK         "\033[30m"
 #define ANSI_RED           "\033[31m"
@@ -37,8 +35,7 @@ October 30th 2025
 #define ANSI_BRIGHT_CYAN    "\033[96m"
 #define ANSI_BRIGHT_WHITE   "\033[97m"
 
-namespace Ke
-{
-VOID Log(LPCSTR File, LPCSTR String, ...);
-VOID Print(LPCSTR String, ...);
+namespace ke {
+void log(const char *file, const char *string, ...);
+void print(const char *string, ...);
 }

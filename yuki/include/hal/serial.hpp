@@ -15,7 +15,7 @@ March 17th 2026
 
 #pragma once
 
-#include <typedefs.hpp>
+#include <cstdint>
 
 // Serial Port Registers
 #define SERIAL_REGISTER_RB 0 // Recieve Buffer | Read
@@ -75,23 +75,22 @@ March 17th 2026
 #define COM1 0x3F8
 #define COM2 0x2F8
 
-namespace Hal
-{
-    inline VOID outb(UINT8 Data, UINT16 Port);
-    inline UINT8 inb(UINT16 Port);
+namespace hal {
+    inline void outb(uint8_t Data, uint16_t Port);
+    inline uint8_t inb(uint16_t Port);
 
-    VOID SerialSetDlab(UINT16 Port, BOOL Setting);
-    VOID SerialSetBaud(UINT16 Port, UINT16 BaudRate);
-    VOID SerialSetLineCr(UINT16 Port, UINT8 LineControlRegister);
-    VOID SerialSetFifo(UINT16 Port, UINT8 Fifo);
-    VOID SerialSetMcr(UINT16 Port, UINT8 ModemControlRegister);
+    void serialSetDlab(uint16_t Port, bool Setting);
+    void serialSetBaud(uint16_t Port, uint16_t BaudRate);
+    void serialSetLineCr(uint16_t Port, uint8_t LineControlRegister);
+    void serialSetFifo(uint16_t Port, uint8_t Fifo);
+    void serialSetMcr(uint16_t Port, uint8_t ModemControlRegister);
 
-    INT SerialRecieved(UINT16 Port);
-    CHAR ReadSerial(UINT16 Port);
-    INT TransmitEmpty(UINT16 Port);
-    VOID WriteSerial(UINT16 Port, CHAR Character);
+    int serialRecieved(uint16_t Port);
+    char readSerial(uint16_t Port);
+    int transmitEmpty(uint16_t Port);
+    void writeSerial(uint16_t Port, char Character);
 
-    VOID WriteStringToSerial(UINT16 Port, LPCSTR String);
+    void writeStringToSerial(uint16_t Port, const char *String);
 
-    VOID InitializeSerial(UINT16 Port);
+    void initializeSerial(uint16_t Port);
 }

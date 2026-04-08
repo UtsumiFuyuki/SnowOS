@@ -27,53 +27,40 @@ October 28th 2025
 // MSVC puts global constructors in a section .CRT$XCU that is ordered between .CRT$XCA and
 // .CRT$XCZ.
 // This is taken from managarm, thank you :3
-__declspec(allocate(".CRT$XCA")) LPCVOID crt_xct = nullptr;
-__declspec(allocate(".CRT$XCZ")) LPCVOID crt_xcz = nullptr;
+__declspec(allocate(".CRT$XCA")) const void *crt_xct = nullptr;
+__declspec(allocate(".CRT$XCZ")) const void *crt_xcz = nullptr;
 
-extern "C" VOID KeRunConstructors() {
-	using InitializerPtr = VOID (*)();
-	UINT_PTR begin = reinterpret_cast<UINT_PTR>(&crt_xct);
-	UINT_PTR end = reinterpret_cast<UINT_PTR>(&crt_xcz);
-	for (UINT_PTR it = begin + sizeof(LPVOID); it < end; it += sizeof(LPVOID)) {
+extern "C" void keRunConstructors() {
+	using InitializerPtr = void (*)();
+	uintptr_t begin = reinterpret_cast<uintptr_t>(&crt_xct);
+	uintptr_t end = reinterpret_cast<uintptr_t>(&crt_xcz);
+	for (uintptr_t it = begin + sizeof(void *); it < end; it += sizeof(void *)) {
 		auto *p = reinterpret_cast<InitializerPtr *>(it);
 		(*p)();
 	}
 }
 
-extern "C" VOID KeMain(LPVOID SnowBootInfo)
-{
-    KeRunConstructors();
+extern "C" void keMain(void *snowbootInfo) {
+    keRunConstructors();
 
-    Hal::Init();
-    Hal::PrintString("Snow Operating System (c) 2025, 2026 UtsumiFuyuki\r\n");
-    Ke::Print("Yuki Kernel Version %d.%d.%d\r\n", YUKI_VERSION_MAJOR, YUKI_VERSION_MINOR, YUKI_VERSION_PATCH);
-    Ke::Print("Booted by: ");
+    hal::initialize();
+    hal::printString("Snow Operating System (c) 2025, 2026 UtsumiFuyuki\r\n");
+    ke::print("Yuki Kernel Version %d.%d.%d\r\n", YUKI_VERSION_MAJOR, YUKI_VERSION_MINOR, YUKI_VERSION_PATCH);
+    ke::print("Booted by: ");
     
-    if (SnowBootInfo == nullptr)
-    {
-        Ke::Print("Limine %s\r\n\r\n", Hal::BlVersion());
+    if (snowbootInfo == nullptr) {
+        ke::print("Limine %s\r\n\r\n", hal::blVersion());
     }
-    else
-    {
-        Ke::Print("SnowBoot\r\n");
+    else {
+        ke::print("SnowBoot\r\n");
     }
 
-    Hal::InitCpu();
-    Mm::EarlyInit();
-    Hal::InitializePaging();
-    Mm::Initialize();
-
-    UINT_PTR Test = Mm::AllocatePage();
-    Mm::FreePage(Test);
-
-    // There's nothing for the other CPUs to do, in fact they halt in this function, but init them anyways :p
-    //Hal::InitSmp();
-
-    Hal::MapPages(0xCAFEB000, 0xDEADB000, 0x8000, PAGE_WRITE);
-    Hal::UnmapPages(0xDEADB000, 0x7000);
-
-    Mm::InitializeVmm();
+    hal::initCpu();
+    mm::earlyInit();
+    hal::initializePaging();
+    mm::initialize();
+    mm::initializeVmm();
 
     // We're done, just hang...
-    Hal::HaltCpu();
+    hal::haltCpu();
 }

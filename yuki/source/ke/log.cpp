@@ -13,7 +13,6 @@ UtsumiFuyuki
 October 30th 2025
 **/
 
-#include <typedefs.hpp>
 #include <cstdarg>
 #include <ke/string.hpp>
 #include <hal/hal.hpp>
@@ -32,36 +31,32 @@ October 30th 2025
 #define NANOPRINTF_IMPLEMENTATION
 #include <ke/nanoprintf.hpp>
 
-CHAR Buffer[512];
-CHAR LoggerBuffer[512];
+char buffer[512];
+char loggerBuffer[512];
 
-VOID Ke::Log(LPCSTR File, LPCSTR String, ...)
-{
-    va_list Arguments;
-    va_start(Arguments, String);
+void ke::log(const char *file, const char *string, ...) {
+    va_list arguments;
+    va_start(arguments, string);
 
-    Hal::WriteStringToSerial(COM1, File);
-    Hal::WriteStringToSerial(COM1, ": ");
+    hal::writeStringToSerial(COM1, file);
+    hal::writeStringToSerial(COM1, ": ");
 
-    npf_vsnprintf(LoggerBuffer, sizeof(LoggerBuffer), String, Arguments);
+    npf_vsnprintf(loggerBuffer, sizeof(loggerBuffer), string, arguments);
 
-    Hal::WriteStringToSerial(COM1, LoggerBuffer);
+    hal::writeStringToSerial(COM1, loggerBuffer);
 
-    va_end(Arguments);
+    va_end(arguments);
 
-    memset(LoggerBuffer, 0, sizeof(LoggerBuffer));
+    memset(loggerBuffer, 0, sizeof(loggerBuffer));
 }
 
-VOID Ke::Print(LPCSTR String, ...)
-{
-    va_list Arguments;
-    va_start(Arguments, String);
+void ke::print(const char *string, ...) {
+    va_list arguments;
+    va_start(arguments, string);
 
-    npf_vsnprintf(Buffer, sizeof(Buffer), String, Arguments);
+    npf_vsnprintf(buffer, sizeof(buffer), string, arguments);
+    hal::printString(buffer);
 
-    Hal::PrintString(Buffer);
-
-    va_end(Arguments);
-
-    memset(Buffer, 0, sizeof(Buffer));
+    va_end(arguments);
+    memset(buffer, 0, sizeof(buffer));
 }

@@ -13,7 +13,7 @@
 ;October 28th 2025
 ;
 
-%macro IsrErrorStub 1
+%macro isrErrorStub 1
 ISR_STUB_%+%1:
     push %1
     push r15
@@ -33,7 +33,7 @@ ISR_STUB_%+%1:
     push rax
 
     mov rcx, rsp
-    call KeInterruptHandler
+    call keInterruptHandler
 
     pop rax
     pop rbx
@@ -54,7 +54,7 @@ ISR_STUB_%+%1:
     iretq
 %endmacro
 
-%macro IsrNoErrorStub 1
+%macro isrNoErrorStub 1
 ISR_STUB_%+%1:
     push 0x0
     push %1
@@ -75,7 +75,7 @@ ISR_STUB_%+%1:
     push rax
 
     mov rcx, rsp
-    call KeInterruptHandler
+    call keInterruptHandler
 
     pop rax
     pop rbx
@@ -96,45 +96,45 @@ ISR_STUB_%+%1:
     iretq
 %endmacro
 
-extern KeInterruptHandler
-IsrNoErrorStub  0
-IsrNoErrorStub  1
-IsrNoErrorStub  2
-IsrNoErrorStub  3
-IsrNoErrorStub  4
-IsrNoErrorStub  5
-IsrNoErrorStub  6
-IsrNoErrorStub  7
-IsrErrorStub    8
-IsrNoErrorStub  9
-IsrErrorStub    10
-IsrErrorStub    11
-IsrErrorStub    12
-IsrErrorStub    13
-IsrErrorStub    14
-IsrNoErrorStub  15
-IsrNoErrorStub  16
-IsrErrorStub    17
-IsrNoErrorStub  18
-IsrNoErrorStub  19
-IsrNoErrorStub  20
-IsrNoErrorStub  21
-IsrNoErrorStub  22
-IsrNoErrorStub  23
-IsrNoErrorStub  24
-IsrNoErrorStub  25
-IsrNoErrorStub  26
-IsrNoErrorStub  27
-IsrNoErrorStub  28
-IsrNoErrorStub  29
-IsrErrorStub    30
-IsrNoErrorStub  31
+extern keInterruptHandler
+isrNoErrorStub  0
+isrNoErrorStub  1
+isrNoErrorStub  2
+isrNoErrorStub  3
+isrNoErrorStub  4
+isrNoErrorStub  5
+isrNoErrorStub  6
+isrNoErrorStub  7
+isrErrorStub    8
+isrNoErrorStub  9
+isrErrorStub    10
+isrErrorStub    11
+isrErrorStub    12
+isrErrorStub    13
+isrErrorStub    14
+isrNoErrorStub  15
+isrNoErrorStub  16
+isrErrorStub    17
+isrNoErrorStub  18
+isrNoErrorStub  19
+isrNoErrorStub  20
+isrNoErrorStub  21
+isrNoErrorStub  22
+isrNoErrorStub  23
+isrNoErrorStub  24
+isrNoErrorStub  25
+isrNoErrorStub  26
+isrNoErrorStub  27
+isrNoErrorStub  28
+isrNoErrorStub  29
+isrErrorStub    30
+isrNoErrorStub  31
 
-global IsrStubTable
+global isrStubTable
 
 section .text
 
-IsrStubTable:
+isrStubTable:
 %assign i 0 
 %rep    32
     dq ISR_STUB_%+i

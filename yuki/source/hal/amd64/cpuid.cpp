@@ -1,14 +1,13 @@
 #include <hal/amd64/cpuid.hpp>
 
-CPUID Hal::X64::GetCpuid(UINT64 Rax)
-{
-    CPUID Cpuid{};
+CPUID hal::x64::getCpuid(uint64_t rax) {
+    CPUID cpuid{};
 
     __asm__ volatile (
                     "mov %0, %%rax;"
                     "cpuid;"
                     "mov %%rbx, %1;"
                     "mov %%rcx, %2;"
-                    "mov %%rdx, %3;" : "=b"(Cpuid.Rbx), "=c"(Cpuid.Rcx), "=d"(Cpuid.Rdx) : "a"(Rax));
-    return Cpuid;
+                    "mov %%rdx, %3;" : "=b"(cpuid.rbx), "=c"(cpuid.rcx), "=d"(cpuid.rdx) : "a"(rax));
+    return cpuid;
 }

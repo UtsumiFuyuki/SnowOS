@@ -25,141 +25,138 @@ October 28th 2025
 // Limine Stuff
 
 // Limine Base Revision, set to 6, the most recent revision
-namespace
-{
+namespace {
     __attribute__((used, section(".limine_requests")))
-    volatile UINT64 LimineBaseRevision[] = LIMINE_BASE_REVISION(6);
+    volatile uint64_t limineBaseRevision[] = LIMINE_BASE_REVISION(6);
 }
 
 // The Limine requests. Basically tells the bootloader what we want from it :p
 
-namespace
-{
+namespace {
     __attribute__((used, section(".limine_requests")))
-    volatile limine_bootloader_info_request LimineBootInfoRequest = {
+    volatile limine_bootloader_info_request limineBootInfoRequest = {
         .id = LIMINE_BOOTLOADER_INFO_REQUEST_ID,
         .revision = 0,
         .response = nullptr
     };
 
     __attribute__((used, section(".limine_requests")))
-    volatile limine_framebuffer_request framebuffer_request = {
+    volatile limine_framebuffer_request limineFramebufferRequest = {
         .id = LIMINE_FRAMEBUFFER_REQUEST_ID,
         .revision = 0,
         .response = nullptr
     };
 
-    volatile limine_memmap_request LimineMemoryMapRequest = {
+    volatile limine_memmap_request limineMemoryMapRequest = {
         .id = LIMINE_MEMMAP_REQUEST_ID,
         .revision = 0,
         .response = nullptr
     };
 
-    volatile limine_hhdm_request LimineHhdmRequest = {
+    volatile limine_hhdm_request limineHhdmRequest = {
         .id = LIMINE_HHDM_REQUEST_ID,
         .revision = 0,
         .response = nullptr
     };
 
-    volatile limine_mp_request LimineMpRequest = {
+    volatile limine_mp_request limineMpRequest = {
         .id = LIMINE_MP_REQUEST_ID,
         .revision = 0,
         .response = nullptr
     };
 
-    volatile limine_rsdp_request LimineRsdpRequest = {
+    volatile limine_rsdp_request limineRsdpRequest = {
         .id = LIMINE_RSDP_REQUEST_ID,
         .revision = 0,
         .response = nullptr
     };
 }
 
-namespace
-{
+namespace {
     __attribute__((used, section(".limine_requests_start")))
-    volatile UINT64 LimineRequestsStartMarker[] = LIMINE_REQUESTS_START_MARKER;
+    volatile uint64_t LimineRequestsStartMarker[] = LIMINE_REQUESTS_START_MARKER;
 
     __attribute__((used, section(".limine_requests_end")))
-    volatile UINT64 LimineRequestsEndMarker[] = LIMINE_REQUESTS_END_MARKER;
+    volatile uint64_t LimineRequestsEndMarker[] = LIMINE_REQUESTS_END_MARKER;
 }
 
-struct flanterm_context* FtCtx;
+struct flanterm_context* flantermContext;
 
-UINT32 TerminalForeground = 0xFFFFFF;
-UINT32 TerminalBackground = 0x0000AD;
+uint32_t terminalForeground = 0xFFFFFF;
+uint32_t terminalBackground = 0x0000AD;
 
-extern "C" VOID ReloadSegments();
-extern "C" LPVOID IsrStubTable[];
+extern "C" void ReloadSegments();
+extern "C" void *isrStubTable[];
 
-GDT Gdt {0, KERNEL_CS, KERNEL_DS, USER_CS, USER_DS};
-DTR GdtRegister;
+GDT gdt {0, KERNEL_CS, KERNEL_DS, USER_CS, USER_DS};
+DTR gdtr;
 
-IDT_ENTRY Idt[256];
-DTR Idtr;
+IDT_ENTRY idt[256];
+DTR idtr;
 
-limine_framebuffer *Framebuffer;
+limine_framebuffer *framebuffer;
 
 // The following stubs are required by the Itanium C++ ABI (the one we use,
 // regardless of the "Itanium" nomenclature).
 // Like the memory functions above, these stubs can be moved to a different .cpp file,
 // but should not be removed, unless you know what you are doing.
 extern "C" {
-    INT __cxa_atexit(VOID (*)(LPVOID), LPVOID, LPVOID) { return 0; }
-    VOID __cxa_pure_virtual() { Hal::HaltCpu(); }
-    VOID *__dso_handle;
+    int __cxa_atexit(void (*)(void *), void *, void *) { return 0; }
+    void __cxa_pure_virtual() { hal::haltCpu(); }
+    void *__dso_handle;
 }
 
-VOID HalIdtSetDescriptor(UINT8 Vector, LPVOID Isr, UINT8 Flags) {
-    IDT_ENTRY* Descriptor = &Idt[Vector];
+void halIdtSetDescriptor(uint8_t vector, void * isr, uint8_t flags) {
+    IDT_ENTRY* descriptor = &idt[vector];
 
-    Descriptor->IsrLow              = (UINT64)Isr & 0xFFFF;
-    Descriptor->SegmentSelector     = 0x08;
-    Descriptor->Ist                 = 0;
-    Descriptor->Attributes          = Flags;
-    Descriptor->IsrMid              = ((UINT64)Isr >> 16) & 0xFFFF;
-    Descriptor->IsrHigh             = ((UINT64)Isr >> 32) & 0xFFFFFFFF;
-    Descriptor->Reserved            = 0;
+    descriptor->isrLow              = (uint64_t)isr & 0xFFFF;
+    descriptor->segmentSelector     = 0x08;
+    descriptor->ist                 = 0;
+    descriptor->attributes          = flags;
+    descriptor->isrMid              = ((uint64_t)isr >> 16) & 0xFFFF;
+    descriptor->isrHigh             = ((uint64_t)isr >> 32) & 0xFFFFFFFF;
+    descriptor->reserved            = 0;
 }
 
-extern "C" BOOL HalInterruptsEnabled()
+extern "C" bool halInterruptsEnabled()
 {
-    UINT64 Enabled{};
+    uint64_t enabled{};
     __asm__ volatile (
                     "pushfq;"
                     "pop %%rax;"
                     "shr $9, %%rax;"
                     "and $1, %%rax;"
-                    "mov %%rax, %0" : "=c"(Enabled));
-    return Enabled;
+                    "mov %%rax, %0" : "=c"(enabled));
+    return enabled;
 }
 
 
-VOID Hal::Init()
+void hal::initialize()
 {
     // Ensure the bootloader actually understands our base revision (see spec).
-    if (LIMINE_BASE_REVISION_SUPPORTED(LimineBaseRevision) == false) {
-        Hal::HaltCpu();
+    if (LIMINE_BASE_REVISION_SUPPORTED(limineBaseRevision) == false) {
+        hal::haltCpu();
     }
 
     // Ensure we got a framebuffer.
-    if (framebuffer_request.response == nullptr
-     || framebuffer_request.response->framebuffer_count < 1) {
-        Hal::HaltCpu();
+    if (limineFramebufferRequest.response == nullptr
+     || limineFramebufferRequest.response->framebuffer_count < 1) {
+        hal::haltCpu();
     }
 
     // Fetch the first framebuffer.
-    Framebuffer = framebuffer_request.response->framebuffers[0];
+    framebuffer = limineFramebufferRequest.response->framebuffers[0];
 
-    FtCtx = flanterm_fb_init(
+    flantermContext = flanterm_fb_init(
         NULL,
         NULL,
-        reinterpret_cast<UINT32 *>(Framebuffer->address), Framebuffer->width, Framebuffer->height, Framebuffer->pitch,
-        Framebuffer->red_mask_size, Framebuffer->red_mask_shift,
-        Framebuffer->green_mask_size, Framebuffer->green_mask_shift,
-        Framebuffer->blue_mask_size, Framebuffer->blue_mask_shift,
+        reinterpret_cast<uint32_t *>(framebuffer->address), framebuffer->width, framebuffer->height, framebuffer->pitch,
+        framebuffer->red_mask_size, framebuffer->red_mask_shift,
+        framebuffer->green_mask_size, framebuffer->green_mask_shift,
+        framebuffer->blue_mask_size, framebuffer->blue_mask_shift,
         NULL,
         NULL, NULL,
-        &TerminalBackground, &TerminalForeground,
+        &terminalBackground, &terminalForeground,
         NULL, NULL,
         NULL, 0, 0, 1,
         0, 0,
@@ -167,98 +164,100 @@ VOID Hal::Init()
         0
     );
 
-    Hal::InitializeSerial(COM1);
+    hal::initializeSerial(COM1);
 }
 
-SPINLOCK Lock{};
+SPINLOCK lock{};
 
-VOID CpuStart(limine_mp_info *MpInfo)
+void cpuStart(limine_mp_info *MpInfo)
 {
-    BOOL IntsEnabled = Ke::SpinlockAcquire(&Lock);
+    bool intsEnabled = ke::spinlockAcquire(&lock);
 
-    __asm__ volatile ("lgdt %0" :: "m"(GdtRegister));
+    __asm__ volatile ("lgdt %0" :: "m"(gdtr));
     ReloadSegments();
-    __asm__ volatile ("lidt %0" :: "m"(Idtr));
+    __asm__ volatile ("lidt %0" :: "m"(idtr));
 
-    Ke::Print("CPU startup complete!\r\n");
+    ke::print("CPU startup complete!\r\n");
 
-    Ke::SpinlockRelease(&Lock, IntsEnabled);
+    ke::spinlockRelease(&lock, intsEnabled);
 
-    Hal::HaltCpu();
+    hal::haltCpu();
 }
 
-VOID Hal::PrintString(LPCSTR String)
+void hal::printString(const char *String)
 {
-    flanterm_write(FtCtx, String, strlen(String));
-    Hal::WriteStringToSerial(COM1, String);
+    flanterm_write(flantermContext, String, strlen(String));
+    hal::writeStringToSerial(COM1, String);
 }
 
-VOID Hal::HaltCpu()
+void hal::haltCpu()
 {
     for (;;)
     {
-        __asm__ volatile ("hlt");
+        #if defined (__x86_64__)
+            __asm__ volatile ("hlt");
+        #endif
     }
 }
 
-VOID Hal::InitCpu()
+void hal::initCpu()
 {
     // Setup the GDT
-    GdtRegister.Base = reinterpret_cast<UINT_PTR>(&Gdt);
-    GdtRegister.Limit = (sizeof(Gdt) - 1);
+    gdtr.base = reinterpret_cast<uintptr_t>(&gdt);
+    gdtr.limit = (sizeof(gdt) - 1);
 
-    __asm__ volatile ("lgdt %0" :: "m"(GdtRegister));
+    __asm__ volatile ("lgdt %0" :: "m"(gdtr));
     ReloadSegments();
 
     // Setup the IDT
-    Idtr.Base = (UINT_PTR)&Idt;
-    Idtr.Limit = (UINT16)sizeof(IDT_ENTRY) * 256 - 1;
+    idtr.base = (uintptr_t)&idt;
+    idtr.limit = (uint16_t)sizeof(IDT_ENTRY) * 256 - 1;
 
-    for(INT i = 0; i < 40; i++)
+    for(int i = 0; i < 40; i++)
     {
-        HalIdtSetDescriptor(i, IsrStubTable[i], 0x8e);
+        halIdtSetDescriptor(i, isrStubTable[i], 0x8e);
     }
 
-    __asm__ volatile ("lidt %0" :: "m"(Idtr));
-    Ke::Print("CPU Initialized!\r\n");
+    __asm__ volatile ("lidt %0" :: "m"(idtr));
+    ke::print("CPU Initialized!\r\n");
 }
 
-VOID Hal::InitSmp()
+void hal::initSmp()
 {
-    limine_mp_response *MpResponse = LimineMpRequest.response;
-    if (MpResponse->cpu_count == 1)
+    limine_mp_response *mpResponse = limineMpRequest.response;
+    if (mpResponse->cpu_count == 1)
     {
-        Ke::Print("Running on a Uniprocesser System!\r\n");
+        ke::print("Running on a Uniprocesser System!\r\n");
         return;
     }
 
-    Ke::Print("Running with %llu processors\r\n", MpResponse->cpu_count);
+    ke::print("Running with %llu processors\r\n", mpResponse->cpu_count);
 
-    VOID (*CpuStartAddress)(limine_mp_info *MpInfo) = CpuStart;
+    void (*cpuStartAddress)(limine_mp_info *MpInfo) = cpuStart;
 
-    for (UINT64 i = 1; i < MpResponse->cpu_count; i++)
+    for (uint64_t i = 1; i < mpResponse->cpu_count; i++)
     {
-        MpResponse->cpus[i]->goto_address = CpuStartAddress;
+        mpResponse->cpus[i]->goto_address = cpuStartAddress;
     }
 }
 
-LPCSTR Hal::BlVersion()
+const char *hal::blVersion()
 {
-    return LimineBootInfoRequest.response->version;
+    return limineBootInfoRequest.response->version;
 }
 
-UINT64 Hal::RetrieveHhdmOffset()
+uint64_t hal::retrieveHhdmOffset()
 {
-    return LimineHhdmRequest.response->offset;
+    return limineHhdmRequest.response->offset;
 }
 
-limine_memmap_response *Hal::RetrieveMemoryMap()
+limine_memmap_response *hal::retrieveMemoryMap()
 {
-    limine_memmap_response *MemoryMap = LimineMemoryMapRequest.response;
+    limine_memmap_response *MemoryMap = limineMemoryMapRequest.response;
     return MemoryMap;
 }
 
-UINT_PTR Hal::RetrieveRsdpPhysicalAddress()
+uintptr_t hal::retrieveRsdpPhysicalAddress()
 {
-    return reinterpret_cast<UINT_PTR>(LimineRsdpRequest.response->address) - Hal::RetrieveHhdmOffset();
+    return reinterpret_cast<uintptr_t>(limineRsdpRequest.response->address) - hal::retrieveHhdmOffset();
 }

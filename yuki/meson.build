@@ -62,7 +62,7 @@ add_project_arguments(
 
 add_project_link_arguments(
     '-Wl,/subsystem:NATIVE',
-    '-Wl,/entry:KeMain',
+    '-Wl,/entry:keMain',
     '-Wl,/largeaddressaware',
     '-Wl,/base:0xFFFFFFFF80000000',
     '-Wl,/nodefaultlib',

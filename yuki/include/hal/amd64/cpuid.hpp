@@ -14,20 +14,17 @@ March 24th 2026
 
 #pragma once
 
-#include <typedefs.hpp>
+#include <cstdint>
 
-typedef struct _CPUID
-{
-    UINT64 Rax{};
-    UINT64 Rbx{};
-    UINT64 Rcx{};
-    UINT64 Rdx{};
+typedef struct _CPUID {
+    uint64_t rax{};
+    uint64_t rbx{};
+    uint64_t rcx{};
+    uint64_t rdx{};
 } CPUID;
 
-namespace Hal
-{
-    namespace X64
-    {
-        CPUID GetCpuid(UINT64 Rax);
+namespace hal {
+    namespace x64 {
+        CPUID getCpuid(uint64_t rax);
     }
 }

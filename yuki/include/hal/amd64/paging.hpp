@@ -1,4 +1,6 @@
-#include <typedefs.hpp>
+#pragma once
+
+#include <cstdint>
 
 #define PML4_SHIFT 39
 #define PDPT_SHIFT 30
@@ -17,22 +19,19 @@
 #define PTE_USER (1ULL << 2)
 #define PTE_PWT (1ULL << 3)
 #define PTE_PCD (1ULL << 4)
-
 #define PTE_EXECUTE_DISABLE (1ULL << 63)
 
-typedef UINT64 PAGE_TABLE_ENTRY;
+typedef uint64_t PAGE_TABLE_ENTRY;
 
-namespace Hal
-{
-    namespace X64
-    {
-        VOID InitializePaging();
-        VOID SetCr3(UINT_PTR Pml4);
-        PAGE_TABLE_ENTRY CreateNewEntry(UINT64 Flags);
-        VOID MapPage(UINT_PTR PhysicalAddress, UINT_PTR VirtualAddress, UINT64 Flags);
-        VOID MapPages(UINT_PTR PhysicalAddress, UINT_PTR VirtualAddress, UINT64 Length, UINT64 Flags); 
-        VOID UnmapPage(UINT_PTR VirtualAddress);
-        VOID UnmapPages(UINT_PTR VirtualAddress, UINT64 Length);
-        UINT_PTR VirtualToPhysical(UINT64 VirtualAddress);
+namespace hal {
+    namespace x64 {
+        void initializePaging();
+        void setCr3(uintptr_t pml4);
+        PAGE_TABLE_ENTRY createNewEntry(uint64_t flags);
+        void mapPage(uintptr_t physicalAddress, uintptr_t virtualAddress, uint64_t flags);
+        void mapPages(uintptr_t physicalAddress, uintptr_t virtualAddress, uint64_t length, uint64_t flags); 
+        void unmapPage(uintptr_t virtualAddress);
+        void unmapPages(uintptr_t virtualAddress, uint64_t length);
+        uintptr_t virtualToPhysical(uint64_t virtualAddress);
     }
 }

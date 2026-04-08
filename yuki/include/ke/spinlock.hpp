@@ -14,44 +14,40 @@ March 24th 2026
 
 #pragma once
 
+#include <cstdint>
 #include <hal/hal.hpp>
 
 typedef struct _SPINLOCK
 {
-    UINT64 Flag{};
+    uint64_t Flag{};
 } SPINLOCK, *PSPINLOCK;
 
-namespace Ke
-{
-    static inline VOID SpinlockInitialize(PSPINLOCK Lock)
-    {
-        __atomic_store_n(&Lock->Flag, 0, __ATOMIC_RELAXED);
+namespace ke {
+    static inline void spinlockInitialize(PSPINLOCK lock) {
+        __atomic_store_n(&lock->Flag, 0, __ATOMIC_RELAXED);
     }
 
     [[nodiscard]]
-    static inline BOOL SpinlockAcquire(PSPINLOCK Lock)
-    {
+    static inline bool spinlockAcquire(PSPINLOCK lock) {
         // Get the state of the IF before disabling interrupts
-        BOOL IntsEnabled = HalInterruptsEnabled();
+        bool intsEnabled = halInterruptsEnabled();
 
         __asm__ volatile ("cli" ::: "memory");
 
-        while (true)
-        {
-            if (!__atomic_exchange_n(&Lock->Flag, 1, __ATOMIC_ACQUIRE))
+        while (true) {
+            if (!__atomic_exchange_n(&lock->Flag, 1, __ATOMIC_ACQUIRE))
                 break;
 
-            while (__atomic_load_n(&Lock->Flag, __ATOMIC_RELAXED))
+            while (__atomic_load_n(&lock->Flag, __ATOMIC_RELAXED))
                 __asm__ volatile ("pause" ::: "memory");
         }
 
-        return IntsEnabled;
+        return intsEnabled;
     }
 
-    static inline VOID SpinlockRelease(PSPINLOCK Lock, BOOL IntsEnabled)
-    {
-        __atomic_store_n(&Lock->Flag, 0, __ATOMIC_RELEASE);
-        if (IntsEnabled)
+    static inline void spinlockRelease(PSPINLOCK lock, bool intsEnabled) {
+        __atomic_store_n(&lock->Flag, 0, __ATOMIC_RELEASE);
+        if (intsEnabled)
             __asm__ volatile ("sti" ::: "memory");
 
         else

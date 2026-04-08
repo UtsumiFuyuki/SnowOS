@@ -15,7 +15,7 @@ March 29rd 2026
 
 #pragma once
 
-#include <typedefs.hpp>
+#include <cstdint>
 
 #define LIST_INSERT_BEFORE 0
 #define LIST_INSERT_AFTER 1
@@ -23,9 +23,9 @@ March 29rd 2026
 template <typename T>
 struct LL_NODE
 {
-    LL_NODE *Prev;
-    T Data;
-    LL_NODE *Next;
+    LL_NODE *prev;
+    T data;
+    LL_NODE *next;
 };
 
 // A Doubly Linked List Implementation
@@ -33,109 +33,109 @@ template <typename T>
 class LIST
 {
     public:
-        VOID Push(T Data)
+        void push(T Data)
         {
             // TODO: Implement default push
         }
 
         // Usable without needing the memory allocator to be started
-        VOID Push(LL_NODE<T> *Node)
+        void push(LL_NODE<T> *node)
         {
-            if (Head == nullptr && Tail == nullptr)
+            if (head == nullptr && tail == nullptr)
             {
-                Head = Node;
-                Tail = Head;
+                head = node;
+                tail = head;
             }
 
             else
             {
-                Node->Next = nullptr;
-                Node->Prev = Tail;
-                Tail->Next = Node;
-                Tail = Node;    
+                node->next = nullptr;
+                node->prev = tail;
+                tail->next = node;
+                tail = node;    
             }
-            Size++;
+            size++;
         }
 
-        T RemoveHead()
+        T removeHead()
         {
             // TODO: Implement Popping
         }
 
-        T First()
+        T first()
         {
-            return Head->Data;
+            return head->data;
         }
 
-        T Last()
+        T last()
         {
-            return Tail->Data;
+            return tail->data;
         }
 
-        LL_NODE<T> *GetHead()
+        LL_NODE<T> *getHead()
         {
-            return Head;
+            return head;
         }
 
-        BOOL Empty()
+        bool empty()
         {
-            if (Size == 0)
+            if (size == 0)
                 return true;
             return false;
         }
 
-        VOID Insert(LL_NODE<T> *Location, LL_NODE<T> *Node, UINT8 InsertLoc = LIST_INSERT_BEFORE)
+        void insert(LL_NODE<T> *location, LL_NODE<T> *node, uint8_t insertLoc = LIST_INSERT_BEFORE)
         {
-            if (InsertLoc == LIST_INSERT_BEFORE)
+            if (insertLoc == LIST_INSERT_BEFORE)
             {
-                Node->Prev = Location->Prev;
-                Node->Next = Location;
+                node->prev = location->prev;
+                node->next = location;
 
-                if (Location->Prev != nullptr)
+                if (location->prev != nullptr)
                 {
-                    Location->Prev->Next = Node;
+                    location->prev->next = node;
                 }
 
-                Location->Prev = Node;
+                location->prev = node;
             }
 
             else
             {
-                Node->Next = Location->Next;
-                Node->Prev = Location;
+                node->next = location->next;
+                node->prev = location;
 
-                if (Location->Next != nullptr)
+                if (location->next != nullptr)
                 {
-                    Location->Next->Prev = Node;
+                    location->next->prev = node;
                 }
 
-                Location->Next = Node;
+                location->next = node;
             }
 
-            Size++;
+            size++;
         }
 
-        VOID Remove(LL_NODE<T> *Node)
+        void remove(LL_NODE<T> *node)
         {
-            if (Head == Node)
-                Head = Node->Next;
+            if (head == node)
+                head = node->next;
 
-            if (Tail == Node)
-                Tail = Node->Next;
+            if (tail == node)
+                tail = node->next;
 
-            if (Node->Prev != nullptr)
-                Node->Prev->Next = Node->Next;
+            if (node->prev != nullptr)
+                node->prev->next = node->next;
 
-            if (Node->Next != nullptr)
-                Node->Next->Prev = Node->Prev;
+            if (node->next != nullptr)
+                node->next->prev = node->prev;
 
-            Node->Next = nullptr;
-            Node->Prev = nullptr;
+            node->next = nullptr;
+            node->prev = nullptr;
 
-            Size--;
+            size--;
         }
     private:
-        size_t Size{0};
-        LL_NODE<T> *Head{nullptr};
-        LL_NODE<T> *Tail{nullptr};
+        size_t size{0};
+        LL_NODE<T> *head{nullptr};
+        LL_NODE<T> *tail{nullptr};
 };

@@ -5,127 +5,110 @@ Copyright (c) UtsumiFuyuki 2025, 2026
 File: mm/physical.cpp
 
 Description:
-This file contains the physical page allocator
-for Yuki
+This file contains the physical page allocator for Yuki
 
 Author:
 UtsumiFuyuki
 March 23rd 2026
 **/
 
-#include "typedefs.hpp"
 #include <mm/mm.hpp>
 #include <hal/hal.hpp>
 #include <hal/paging.hpp>
 #include <ke/log.hpp>
 
-PPFN_ENTRY PFNDB{};
-UINT_PTR PFNDBVirtualStart{0xFFFFFA8000000000};
+PPFN_ENTRY pfndb{};
+uintptr_t pfndbVirtualStart{0xFFFFFA8000000000};
 
 // The amount of usable pages in the system
-ULONG64 TotalPages{};
+uint64_t totalPages{};
 
 // List of free pages in the PFNdb
-PAGE_LIST FreeList{.PageCount = 0, .Head = nullptr};
+PAGE_LIST freelist{.pageCount = 0, .head = nullptr};
 
-extern "C" UINT64 BootstrapMemoryBase;
-extern "C" UINT64 BootstrapMemoryAllocated;
+extern "C" uint64_t bootstrapMemoryBase;
+extern "C" uint64_t bootstrapMemoryAllocated;
 
 // Setup the PFNdb and Freelist allocator
-VOID Mm::Initialize()
-{
+void mm::initialize() {
     // Start the PFNdb at 0xFFFFFA8000000000
-    UINT_PTR PFNDBStart = Mm::EarlyAllocatePage();
-    Hal::MapPage(PFNDBStart, PFNDBVirtualStart, PAGE_WRITE | PAGE_NO_EXECUTE);
+    uintptr_t pfndbStart = mm::earlyAllocatePage();
+    hal::mapPage(pfndbStart, pfndbVirtualStart, PAGE_WRITE | PAGE_NO_EXECUTE);
 
-    PFNDB = reinterpret_cast<PPFN_ENTRY>(PFNDBVirtualStart);
+    pfndb = reinterpret_cast<PPFN_ENTRY>(pfndbVirtualStart);
 
     // Start iterating through memory map
-    limine_memmap_response *MemoryMap = Hal::RetrieveMemoryMap();
+    limine_memmap_response *memoryMap = hal::retrieveMemoryMap();
 
-    for (UINT64 i = 0; i < MemoryMap->entry_count; i++)
-    {
-        UINT64 Start = (PFNDBVirtualStart + ((MemoryMap->entries[i]->base >> 12) * sizeof(PFN_ENTRY)));
+    for (size_t i = 0; i < memoryMap->entry_count; i++) {
+        uint64_t start = (pfndbVirtualStart + ((memoryMap->entries[i]->base >> 12) * sizeof(PFN_ENTRY)));
 
         // The Virtual Address to which the region extends to
-        UINT64 Length = Start + (((MemoryMap->entries[i]->base + MemoryMap->entries[i]->length) >> 12) * sizeof(PFN_ENTRY));
+        uint64_t length =start + (((memoryMap->entries[i]->base + memoryMap->entries[i]->length) >> 12) * sizeof(PFN_ENTRY));
 
-        if (Hal::VirtualToPhysical((Length & ~0xFFF) - 0x1000) == 0 && MemoryMap->entries[i]->type == LIMINE_MEMMAP_USABLE)
-        {
-            UINT64 PagesToAlloc = (((Length & ~0xFFF) - (Start & ~0xFFF)) / 0x1000);
+        if (hal::virtualToPhysical((length & ~0xFFF) - 0x1000) == 0 && memoryMap->entries[i]->type == LIMINE_MEMMAP_USABLE) {
+            uint64_t PagesToAlloc = (((length & ~0xFFF) - (start & ~0xFFF)) / 0x1000);
 
             // Virtual Address is not backed
-            for (UINT64 k = 0; k <= PagesToAlloc + 1; k++)
-            {
-                UINT_PTR BackingPage = Mm::EarlyAllocatePage();
+            for (uint64_t k = 0; k <= PagesToAlloc + 1; k++) {
+                uintptr_t backingPage = mm::earlyAllocatePage();
 
-                if (BackingPage == 0)
-                {
-                    Ke::Print("Failed to allocate a backing page!\r\n");
+                if (backingPage == 0) {
+                    ke::print("Failed to allocate a backing page!\r\n");
                     return;
                 }
 
-                Hal::MapPage(BackingPage, (Start & ~0xFFF) + (k * 0x1000), PAGE_WRITE | PAGE_NO_EXECUTE);
+                hal::mapPage(backingPage, (start & ~0xFFF) + (k * 0x1000), PAGE_WRITE | PAGE_NO_EXECUTE);
             }
         }
     }
 
     // Initialize all entries in the PFNdb
-    for (UINT64 i = 0; i < MemoryMap->entry_count; i++)
-    {
-        if (MemoryMap->entries[i]->type == LIMINE_MEMMAP_USABLE)
-        {
-            for (UINT64 k = 0; k < MemoryMap->entries[i]->length; k += 0x1000)
-            {
-                UINT_PTR PhysicalBase = (MemoryMap->entries[i]->base + k);
-                PFN_NUMBER Pfn = (PhysicalBase >> 12);
-
-                
+    for (uint64_t i = 0; i < memoryMap->entry_count; i++) {
+        if (memoryMap->entries[i]->type == LIMINE_MEMMAP_USABLE) {
+            for (size_t k = 0; k < memoryMap->entries[i]->length; k += 0x1000) {
+                uintptr_t physicalBase = (memoryMap->entries[i]->base + k);
+                PFN_NUMBER pfn = (physicalBase >> 12);
 
                 // Don't mark bootstrap memory as free
-                if (PhysicalBase >= BootstrapMemoryBase && PhysicalBase < (BootstrapMemoryBase + (BootstrapMemoryAllocated * 0x1000)))
-                {
-                    PFNDB[Pfn] = {.Free = 0, .PageEntry = nullptr};
-                }
+                if (physicalBase >= bootstrapMemoryBase && physicalBase < (bootstrapMemoryBase + (bootstrapMemoryAllocated * 0x1000)))
+                    pfndb[pfn] = {.free = 0, .pageEntry = nullptr};
 
-                else
-                {
-                    PFNDB[Pfn] = {.Free = 1, .PageEntry = FreeList.Head};
-                    FreeList.Head = &PFNDB[Pfn];
-                    FreeList.PageCount++;
+                else {
+                    pfndb[pfn] = {.free = 1, .pageEntry = freelist.head};
+                    freelist.head = &pfndb[pfn];
+                    freelist.pageCount++;
                 }
             }
 
-            TotalPages += MemoryMap->entries[i]->length / 0x1000;
+            totalPages += memoryMap->entries[i]->length / 0x1000;
         }
     }
 
-    Ke::Print("PFNdb Initialized!\r\n");
+    ke::print("PFNdb Initialized!\r\n");
 }
 
 // Returns the physical address of a free page
-UINT_PTR Mm::AllocatePage()
+uintptr_t mm::allocatePage()
 {
-    if (FreeList.Head == nullptr)
-    {
+    if (freelist.head == nullptr) {
         // TODO: panic on OOM
-        Ke::Log(__FILE__, "Couldn't allocate a page due to OOM!\r\n");
+        ke::log(__FILE__, "Couldn't allocate a page due to OOM!\r\n");
         return 0;
     }
-    UINT_PTR Address = reinterpret_cast<UINT_PTR>(FreeList.Head) - PFNDBVirtualStart;
+    uintptr_t address = reinterpret_cast<uintptr_t>(freelist.head) - pfndbVirtualStart;
 
-    FreeList.Head = FreeList.Head->PageEntry;
-    FreeList.PageCount--;
+    freelist.head = freelist.head->pageEntry;
+    freelist.pageCount--;
 
-    return reinterpret_cast<UINT_PTR>((Address / sizeof(PFN_ENTRY)) << 12);
+    return reinterpret_cast<uintptr_t>((address / sizeof(PFN_ENTRY)) << 12);
 }
 
-VOID Mm::FreePage(UINT_PTR PhysicalAddress)
-{
-    PFN_NUMBER Pfn = (PhysicalAddress >> 12);
+void mm::freePage(uintptr_t physicalAddress) {
+    PFN_NUMBER pfn = (physicalAddress >> 12);
 
-    PFNDB[Pfn].Free = 1;
-    PFNDB[Pfn].PageEntry = FreeList.Head;
-    FreeList.Head = &PFNDB[Pfn];
-    FreeList.PageCount++;
+    pfndb[pfn].free = 1;
+    pfndb[pfn].pageEntry = freelist.head;
+    freelist.head = &pfndb[pfn];
+    freelist.pageCount++;
 }
