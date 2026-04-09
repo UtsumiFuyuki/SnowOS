@@ -34,6 +34,7 @@ typedef struct _VMEM_ARENA
     uintptr_t base;
     size_t size;
     uint64_t quantum;
+    // Imports
     uintptr_t (*allocFunction)(_VMEM_ARENA*, size_t);
     void (*freeFunction)(_VMEM_ARENA*, void*, size_t);
     _VMEM_ARENA *source;
