@@ -13,6 +13,7 @@ March 28th 2026
 **/
 
 #include "utils/list.hpp"
+#include <bit>
 #include <mm/mm.hpp>
 #include <mm/vmem.hpp>
 #include <ke/log.hpp>
@@ -29,6 +30,12 @@ uint64_t pow(uint64_t base, uint64_t exponent) {
         ret *= base;
     }
     return ret;
+}
+
+// NOTE: Doesn't support floating points
+uint64_t log2(const uint64_t &x)
+{
+    return 64 - std::countl_zero(x) - 1;
 }
 
 int mm::vmemCreateArena(PVMEM_ARENA arena,
@@ -53,14 +60,9 @@ int mm::vmemCreateArena(PVMEM_ARENA arena,
 
     initNodes[nextFreeNode].data = {.type = VMEM_SEGMENT_FREE, .segmentBase = base, .segmentSize = size};
     arena->segmentList.push(&initNodes[nextFreeNode]);
-
-    for (size_t i = 0; i < 64; i++) {
-        if (pow(2, i + 1) >= size) {
-            ke::log(__FILE__, "Size 0x%llX goes onto freelist %llu\r\n", size, i);
-            arena->freelists[i].push(&initNodes[nextFreeNode]);
-            break;
-        }
-    }
+            
+    ke::log(__FILE__, "Size 0x%llX goes onto freelist %llu\r\n", size, log2(size));
+    arena->freelists[log2(size)].push(&initNodes[nextFreeNode]);
     nextFreeNode++;
 
     return 0;
@@ -73,39 +75,55 @@ uintptr_t mm::vmemAllocate(PVMEM_ARENA arena, size_t size) {
     if (arena == nullptr)
         return 0;
 
-    //TODO: Use a log2 operation instead =P
-    for (size_t n = 0; n < 64; n++) {
-        if (!arena->freelists[n].empty() && pow(2, n + 1) >= size) {
-            auto *head = arena->freelists[n].getHead();
-            head->data.segmentSize -= size;
+    auto n = log2(size);
+    uint64_t address{};
 
-            if (head->data.segmentSize == 0) {
-                arena->freelists[n].remove(head);
-            }
-
-            for (auto *currentNode = arena->segmentList.getHead(); currentNode != nullptr; currentNode = currentNode->next) {
-                // Find corresponding node in segment list
-                if (currentNode->data.segmentBase == head->data.segmentBase && currentNode->data.type != VMEM_SEGMENT_SPAN) {
-                    if (currentNode->data.segmentSize == size) {
-                        currentNode->data.type = VMEM_SEGMENT_ALLOCATED;
-                        return currentNode->data.segmentBase;
-                    }
-                    auto *allocatedNode = &initNodes[nextFreeNode];
-                    allocatedNode->data.segmentSize = size;
-                    allocatedNode->data.segmentBase = currentNode->data.segmentBase;
-                    allocatedNode->data.type = VMEM_SEGMENT_ALLOCATED;
-
-                    currentNode->data.segmentBase += size;
-
-                    arena->segmentList.insert(currentNode, allocatedNode);
-                    nextFreeNode++;
-                    return allocatedNode->data.segmentBase;
-                }
-            }
-        }
+    for(; arena->freelists[n].empty() && n < 64; n++);
+    
+    if (arena->freelists[n].empty()) {
+        ke::log(__FILE__, "No freelists exist that can satisfy allocation of size 0x%llX!\r\n", size);
+        return 0;
     }
 
-    return 0;
+    auto *head = arena->freelists[n].getHead();
+    address = head->data.segmentBase;
+    head->data.segmentSize -= size;
+
+    if (log2(head->data.segmentSize) != n) {
+        auto x = log2(head->data.segmentSize);
+
+        if (arena->freelists[x].empty()) {
+            // Simply push node, no ordering to do
+            arena->freelists[x].push(head);
+        }
+
+        arena->freelists[n].remove(head);
+    }
+
+    else if (head->data.segmentSize == 0) {
+        arena->freelists[n].remove(head);
+    }
+
+    for (auto *currentNode = arena->segmentList.getHead(); currentNode != nullptr; currentNode = currentNode->next) {
+        // Find corresponding node in segment list
+        if (currentNode->data.segmentBase == head->data.segmentBase && currentNode->data.type != VMEM_SEGMENT_SPAN) {
+            if (currentNode->data.segmentSize == size) {
+                currentNode->data.type = VMEM_SEGMENT_ALLOCATED;
+                return currentNode->data.segmentBase;
+            }
+            auto *allocatedNode = &initNodes[nextFreeNode];
+            allocatedNode->data.segmentSize = size;
+            allocatedNode->data.segmentBase = currentNode->data.segmentBase;
+            allocatedNode->data.type = VMEM_SEGMENT_ALLOCATED;
+
+            currentNode->data.segmentBase += size;
+
+            arena->segmentList.insert(currentNode, allocatedNode);
+            nextFreeNode++;
+            break;
+        }
+    }
+    return address;
 }
 
 void mm::vmemFree(PVMEM_ARENA arena, uintptr_t address, size_t size) {
@@ -148,7 +166,42 @@ void mm::vmemFree(PVMEM_ARENA arena, uintptr_t address, size_t size) {
                 }
             }
 
-            // TODO: Modify Freelist
+            ke::log(__FILE__, "Size 0x%llX fits onto freelist %llu\r\n", size, log2(size));
+            auto *freelistNode = &initNodes[nextFreeNode];
+            freelistNode->data = freedNode->data;
+            nextFreeNode++;
+
+            if (arena->freelists[log2(size)].empty()) {
+                arena->freelists[log2(size)].push(freelistNode);
+            }
+
+            else {
+                for (auto *currentNode = arena->freelists[log2(size)].getHead(); currentNode != nullptr; currentNode = currentNode->next) {
+                    if (currentNode->data.segmentBase >= freelistNode->data.segmentBase) {
+                        arena->freelists[log2(size)].insert(currentNode, freelistNode);
+                    }
+
+                    // Reached end of freelist and no nodes with a base less than freelistNode exist
+                    else if (currentNode->next == nullptr) {
+                        arena->freelists[log2(size)].insert(currentNode, freelistNode, LIST_INSERT_AFTER);
+                    }
+
+                    // Coalesce
+                    auto *nextNode = freelistNode->next;
+                    auto *prevNode = freelistNode->prev;
+
+                    if (nextNode != nullptr && nextNode->data.segmentBase == freelistNode->data.segmentBase + freelistNode->data.segmentSize) {
+                        freelistNode->data.segmentSize += nextNode->data.segmentSize;
+                        arena->freelists[log2(size)].remove(nextNode);
+                    }
+
+                    if (prevNode != nullptr && prevNode->data.segmentBase + prevNode->data.segmentSize == freelistNode->data.segmentBase) {
+                        freelistNode->data.segmentSize += prevNode->data.segmentSize;
+                        freelistNode->data.segmentBase = prevNode->data.segmentBase;
+                        arena->freelists[log2(size)].remove(prevNode);
+                    }
+                }
+            }
 
             // Coalesce blocks together
             // Can probably move this someplace else so I don't end up allocating nodes when they're gonna be coalesced anyways
