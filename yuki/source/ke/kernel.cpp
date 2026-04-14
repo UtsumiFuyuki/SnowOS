@@ -16,7 +16,9 @@ October 28th 2025
 #include <hal/hal.hpp>
 #include <hal/paging.hpp>
 #include <hal/serial.hpp>
+#include <hal/amd64/cpuid.hpp>
 #include <ke/log.hpp>
+#include <ke/string.hpp>
 #include <mm/mm.hpp>
 #include <uacpi/uacpi.h>
 
@@ -56,6 +58,17 @@ extern "C" void keMain(void *snowbootInfo) {
     }
 
     hal::initCpu();
+
+    CPUID_REGISTERS cpuid = hal::x64::getCpuid(0, 0);
+    char vendorId[13];
+    vendorId[12] = '\0';
+
+    memcpy(vendorId, &cpuid.rbx, 4);
+    memcpy(vendorId + 4, &cpuid.rdx, 4);
+    memcpy(vendorId + 8, &cpuid.rcx, 4);
+
+    ke::print("Vendor ID: %s\r\n", vendorId);
+
     mm::earlyInit();
     hal::initializePaging();
     mm::initialize();

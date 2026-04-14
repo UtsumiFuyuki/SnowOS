@@ -16,15 +16,30 @@ March 24th 2026
 
 #include <cstdint>
 
-typedef struct _CPUID {
+typedef struct _CPUID_REGISTERS {
     uint64_t rax{};
     uint64_t rbx{};
     uint64_t rcx{};
     uint64_t rdx{};
-} CPUID;
+} CPUID_REGISTERS;
 
 namespace hal {
     namespace x64 {
-        CPUID getCpuid(uint64_t rax);
+        static inline CPUID_REGISTERS getCpuid(uint64_t rax, uint64_t rcx) {
+            CPUID_REGISTERS cpuidRegs{};
+
+            __asm__ volatile (
+                "mov %4, %%rax;"
+                "mov %5, %%rcx;"
+                "cpuid" :
+                "=a"(cpuidRegs.rax),
+                "=b"(cpuidRegs.rbx),
+                "=c"(cpuidRegs.rcx),
+                "=d"(cpuidRegs.rdx) :
+                "a"(rax),
+                "c"(rcx)
+            );
+            return cpuidRegs;
+        }
     }
 }
