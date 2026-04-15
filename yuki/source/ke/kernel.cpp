@@ -69,6 +69,9 @@ extern "C" void keMain(void *snowbootInfo) {
 
     ke::print("Vendor ID: %s\r\n", vendorId);
 
+    uint64_t *test = reinterpret_cast<uint64_t *>(0x1000);
+    *test = 12;
+
     mm::earlyInit();
     hal::initializePaging();
     mm::initialize();

@@ -1,6 +1,6 @@
 /**
 Snow Operating System
-Copyright (c) UtsumiFuyuki 2025
+Copyright (c) UtsumiFuyuki 2025, 2026
  
 File: hal/hal.cpp
 
@@ -13,11 +13,14 @@ UtsumiFuyuki
 October 28th 2025
 **/
 
+#include <cstdint>
 #include <limine.h>
 #include <flanterm.h>
 #include <flanterm_backends/fb.h>
 #include <hal/hal.hpp>
 #include <hal/serial.hpp>
+#include <hal/amd64/cpuid.hpp>
+#include <hal/amd64/fred.hpp>
 #include <ke/string.hpp>
 #include <ke/log.hpp>
 #include <ke/spinlock.hpp>
@@ -209,16 +212,27 @@ void hal::initCpu()
     __asm__ volatile ("lgdt %0" :: "m"(gdtr));
     ReloadSegments();
 
-    // Setup the IDT
-    idtr.base = (uintptr_t)&idt;
-    idtr.limit = (uint16_t)sizeof(IDT_ENTRY) * 256 - 1;
+    CPUID_REGISTERS cpuid = hal::x64::getCpuid(7, 1);
+    uint8_t fredBit = (cpuid.rax >> 17) & 0x1;
 
-    for(int i = 0; i < 40; i++)
-    {
-        halIdtSetDescriptor(i, isrStubTable[i], 0x8e);
+    if (fredBit == 0) {
+        ke::log(__FILE__, "CPU does not support FRED!\r\n");
+        // Setup the IDT
+        idtr.base = (uintptr_t)&idt;
+        idtr.limit = (uint16_t)sizeof(IDT_ENTRY) * 256 - 1;
+
+        for(int i = 0; i < 40; i++)
+        {
+            halIdtSetDescriptor(i, isrStubTable[i], 0x8e);
+        }
+
+        __asm__ volatile ("lidt %0" :: "m"(idtr));
+    }
+    else {
+        ke::log(__FILE__, "CPU supports FRED!\r\n");
+        hal::x64::initializeFred();
     }
 
-    __asm__ volatile ("lidt %0" :: "m"(idtr));
     ke::print("CPU Initialized!\r\n");
 }
 

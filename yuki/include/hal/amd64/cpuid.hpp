@@ -29,8 +29,6 @@ namespace hal {
             CPUID_REGISTERS cpuidRegs{};
 
             __asm__ volatile (
-                "mov %4, %%rax;"
-                "mov %5, %%rcx;"
                 "cpuid" :
                 "=a"(cpuidRegs.rax),
                 "=b"(cpuidRegs.rbx),

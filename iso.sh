@@ -11,4 +11,4 @@ xorriso -as mkisofs -R -r -J -b limine/limine-bios-cd.bin \
 		-apm-block-size 2048 --efi-boot limine/limine-uefi-cd.bin \
 		-efi-boot-part --efi-boot-image --protective-msdos-label \
 		iso_root -o SnowOS.iso
-./Limine/limine.exe bios-install SnowOS.iso
+./Limine/limine bios-install SnowOS.iso

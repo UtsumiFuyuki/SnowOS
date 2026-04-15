@@ -1,6 +1,6 @@
 /**
 Snow Operating System
-Copyright (c) UtsumiFuyuki 2025
+Copyright (c) UtsumiFuyuki 2025, 2026
  
 File: ke/interrupts.cpp
 
@@ -13,64 +13,44 @@ UtsumiFuyuki
 October 29th 2025
 **/
 
+#include <cstddef>
 #include <cstdint>
 #include <hal/hal.hpp>
+#include <hal/amd64/interrupts.hpp>
 #include <ke/log.hpp>
 
-typedef struct _INTERRUPT_FRAME {
-    uint64_t rax;
-    uint64_t rbx;
-    uint64_t rcx;
-    uint64_t rdx;
-    uint64_t rbp;
-    uint64_t rdi;
-    uint64_t rsi;
-    uint64_t r8;
-    uint64_t r9;
-    uint64_t r10;
-    uint64_t r11;
-    uint64_t r12;
-    uint64_t r13;
-    uint64_t r14;
-    uint64_t r15;
-    uint64_t interruptVector;
-    uint64_t errorCode;
-    uint64_t rip;
-    uint64_t cs;
-    uint64_t rflags;
-    uint64_t rsp;
-} __attribute__((packed)) INTERRUPT_FRAME;
-
-__attribute__((noreturn)) extern "C" void keInterruptHandler(INTERRUPT_FRAME* stackFrame) {
+extern "C" [[noreturn]] void keInterruptHandler(INTERRUPT_REGISTERS* savedRegisters,
+                                                            CPU_STACK_FRAME *cpuSavedRegisters,
+                                                            uint64_t interruptVector) {
     ke::print("\n" ANSI_BRIGHT_RED "Kernel Panic!!!\r\n");
-    ke::print("Stack Frame at: 0x%llX\r\n\r\n", stackFrame);
+    ke::print("Stack Frame at: 0x%llX\r\n\r\n", savedRegisters);
 
     ke::print("Exception: ");
 
-    switch(stackFrame->interruptVector) {
+    switch(interruptVector) {
         case (0x0):
-            ke::print("Division Error!");
+            ke::print("Division Error! (#DE)");
             break;
         case (0x1):
-            ke::print("Debug Interrupt!");
+            ke::print("Debug Interrupt! (#DB)");
             break;
         case (0x2):
             ke::print("Non-maskable Interrupt!");
             break;
         case (0x3):
-            ke::print("Breakpoint!");
+            ke::print("Breakpoint! (#BP)");
             break;
         case (0x4):
-            ke::print("Overflow!");
+            ke::print("Overflow! (#OF)");
             break;
         case (0x5):
-            ke::print("Bound Range Exceeded!");
+            ke::print("Bound Range Exceeded! (#BR)");
             break;
         case (0x6):
-            ke::print("Invalid Opcode!");
+            ke::print("Invalid Opcode! (#UD)");
             break;
         case (0x7):
-            ke::print("Device not Available!");
+            ke::print("Device not Available! (#UD)");
             break;
         case (0xD):
             ke::print("General Protection Fault! (#GP)");
@@ -81,32 +61,32 @@ __attribute__((noreturn)) extern "C" void keInterruptHandler(INTERRUPT_FRAME* st
     }
 
     ke::print(" Error Code: 0x%llX\r\n\r\nRSP: 0x%llX | RFLAGS: 0x%llX\r\nCS: 0x%llX | RIP: 0x%llX\r\n",
-    stackFrame->errorCode,
-    stackFrame->rsp,
-    stackFrame->rflags,
-    stackFrame->cs,
-    stackFrame->rip);
+    cpuSavedRegisters->errorCode,
+    cpuSavedRegisters->rsp,
+    cpuSavedRegisters->rflags,
+    cpuSavedRegisters->cs,
+    cpuSavedRegisters->rip);
 
     ke::print("RAX: 0x%llX | RBX: 0x%llX | RCX: 0x%llX | RDX: 0x%llX\r\n",
-    stackFrame->rax,
-    stackFrame->rbx,
-    stackFrame->rcx,
-    stackFrame->rdx);
+    savedRegisters->rax,
+    savedRegisters->rbx,
+    savedRegisters->rcx,
+    savedRegisters->rdx);
 
     ke::print("RBP: 0x%llX | RDI: 0x%llX | RSI: 0x%llX | R8: 0x%llX\r\n",
-    stackFrame->rbp,
-    stackFrame->rdi,
-    stackFrame->rsi,
-    stackFrame->r8);
+    savedRegisters->rbp,
+    savedRegisters->rdi,
+    savedRegisters->rsi,
+    savedRegisters->r8);
 
     ke::print("R9: 0x%llX | R10: 0x%llX | R11: 0x%llX | R12: 0x%llX | R13: 0x%llX | R14: 0x%llX | R15: 0x%llX\r\n",
-    stackFrame->r9,
-    stackFrame->r10,
-    stackFrame->r11,
-    stackFrame->r12,
-    stackFrame->r13,
-    stackFrame->r14,
-    stackFrame->r15);
+    savedRegisters->r9,
+    savedRegisters->r10,
+    savedRegisters->r11,
+    savedRegisters->r12,
+    savedRegisters->r13,
+    savedRegisters->r14,
+    savedRegisters->r15);
     
     hal::haltCpu();
 }
