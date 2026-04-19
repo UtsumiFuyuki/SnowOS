@@ -40,6 +40,7 @@ namespace mm
     void initialize();
     uintptr_t allocatePage();
     void freePage(uintptr_t physicalAddress);
+    PFN_ENTRY pfnInfo(size_t pfn);
     void initializeVmm();
 
     void *allocateKernelPages(size_t pages);

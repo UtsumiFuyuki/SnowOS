@@ -19,7 +19,9 @@ October 28th 2025
 #include <hal/amd64/cpuid.hpp>
 #include <ke/log.hpp>
 #include <ke/string.hpp>
+#include <ke/sdbg.hpp>
 #include <mm/mm.hpp>
+#include <mm/slab.hpp>
 #include <uacpi/uacpi.h>
 
 #define YUKI_VERSION_MAJOR 0
@@ -68,14 +70,14 @@ extern "C" void keMain(void *snowbootInfo) {
     memcpy(vendorId + 8, &cpuid.rcx, 4);
 
     ke::print("Vendor ID: %s\r\n", vendorId);
-
-    uint64_t *test = reinterpret_cast<uint64_t *>(0x1000);
-    *test = 12;
-
+    
     mm::earlyInit();
     hal::initializePaging();
     mm::initialize();
-    mm::initializeVmm();
+
+    keBeginDebugSession();
+    //mm::initializeVmm();
+    //mm::initializeSlab();
 
     // We're done, just hang...
     hal::haltCpu();

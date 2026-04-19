@@ -13,6 +13,7 @@ sources = files(
     'source/ke/string.cpp',
     'source/ke/log.cpp',
     'source/ke/kernel_api.cpp',
+    'source/ke/sdbg.cpp',
     'source/hal/hal.cpp',
     'source/hal/gdt.asm',
     'source/hal/isr.asm',
@@ -26,7 +27,8 @@ sources = files(
     'source/mm/early_alloc.cpp',
     'source/mm/physical.cpp',
     'source/mm/vmem.cpp',
-    'source/mm/vm_init.cpp'
+    'source/mm/vm.cpp',
+    'source/mm/slab.cpp'
 )
 
 add_project_arguments(

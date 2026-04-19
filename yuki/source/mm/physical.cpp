@@ -16,6 +16,7 @@ March 23rd 2026
 #include <hal/hal.hpp>
 #include <hal/paging.hpp>
 #include <ke/log.hpp>
+#include <ke/spinlock.hpp>
 
 PPFN_ENTRY pfndb{};
 uintptr_t pfndbVirtualStart{0xFFFFFA8000000000};
@@ -28,6 +29,8 @@ PAGE_LIST freelist{.pageCount = 0, .head = nullptr};
 
 extern "C" uint64_t bootstrapMemoryBase;
 extern "C" uint64_t bootstrapMemoryAllocated;
+
+SPINLOCK pageLock{};
 
 // Setup the PFNdb and Freelist allocator
 void mm::initialize() {
@@ -44,13 +47,13 @@ void mm::initialize() {
         uint64_t start = (pfndbVirtualStart + ((memoryMap->entries[i]->base >> 12) * sizeof(PFN_ENTRY)));
 
         // The Virtual Address to which the region extends to
-        uint64_t length =start + (((memoryMap->entries[i]->base + memoryMap->entries[i]->length) >> 12) * sizeof(PFN_ENTRY));
+        uint64_t length = start + (((memoryMap->entries[i]->base + memoryMap->entries[i]->length) >> 12) * sizeof(PFN_ENTRY));
 
         if (hal::virtualToPhysical((length & ~0xFFF) - 0x1000) == 0 && memoryMap->entries[i]->type == LIMINE_MEMMAP_USABLE) {
-            uint64_t PagesToAlloc = (((length & ~0xFFF) - (start & ~0xFFF)) / 0x1000);
+            uint64_t pagesToAlloc = (((length & ~0xFFF) - (start & ~0xFFF)) / 0x1000);
 
             // Virtual Address is not backed
-            for (uint64_t k = 0; k <= PagesToAlloc + 1; k++) {
+            for (uint64_t k = 0; k <= pagesToAlloc + 1; k++) {
                 uintptr_t backingPage = mm::earlyAllocatePage();
 
                 if (backingPage == 0) {
@@ -85,12 +88,15 @@ void mm::initialize() {
         }
     }
 
+    ke::spinlockInitialize(&pageLock);
+    ke::log(__FILE__, "Usable pages in system: %llu\r\n", totalPages);
     ke::print("PFNdb Initialized!\r\n");
 }
 
 // Returns the physical address of a free page
 uintptr_t mm::allocatePage()
 {
+    bool intsEnabled = ke::spinlockAcquire(&pageLock);
     if (freelist.head == nullptr) {
         // TODO: panic on OOM
         ke::log(__FILE__, "Couldn't allocate a page due to OOM!\r\n");
@@ -100,6 +106,7 @@ uintptr_t mm::allocatePage()
 
     freelist.head = freelist.head->pageEntry;
     freelist.pageCount--;
+    ke::spinlockRelease(&pageLock, intsEnabled);
 
     return reinterpret_cast<uintptr_t>((address / sizeof(PFN_ENTRY)) << 12);
 }
@@ -111,4 +118,8 @@ void mm::freePage(uintptr_t physicalAddress) {
     pfndb[pfn].pageEntry = freelist.head;
     freelist.head = &pfndb[pfn];
     freelist.pageCount++;
+}
+
+PFN_ENTRY mm::pfnInfo(size_t pfn) {
+    return pfndb[pfn];
 }

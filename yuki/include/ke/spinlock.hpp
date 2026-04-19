@@ -19,12 +19,12 @@ March 24th 2026
 
 typedef struct _SPINLOCK
 {
-    uint64_t Flag{};
+    uint64_t flag{};
 } SPINLOCK, *PSPINLOCK;
 
 namespace ke {
     static inline void spinlockInitialize(PSPINLOCK lock) {
-        __atomic_store_n(&lock->Flag, 0, __ATOMIC_RELAXED);
+        __atomic_store_n(&lock->flag, 0, __ATOMIC_RELAXED);
     }
 
     [[nodiscard]]
@@ -35,10 +35,10 @@ namespace ke {
         __asm__ volatile ("cli" ::: "memory");
 
         while (true) {
-            if (!__atomic_exchange_n(&lock->Flag, 1, __ATOMIC_ACQUIRE))
+            if (!__atomic_exchange_n(&lock->flag, 1, __ATOMIC_ACQUIRE))
                 break;
 
-            while (__atomic_load_n(&lock->Flag, __ATOMIC_RELAXED))
+            while (__atomic_load_n(&lock->flag, __ATOMIC_RELAXED))
                 __asm__ volatile ("pause" ::: "memory");
         }
 
@@ -46,7 +46,7 @@ namespace ke {
     }
 
     static inline void spinlockRelease(PSPINLOCK lock, bool intsEnabled) {
-        __atomic_store_n(&lock->Flag, 0, __ATOMIC_RELEASE);
+        __atomic_store_n(&lock->flag, 0, __ATOMIC_RELEASE);
         if (intsEnabled)
             __asm__ volatile ("sti" ::: "memory");
 
