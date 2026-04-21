@@ -21,7 +21,6 @@ October 28th 2025
 #include <ke/string.hpp>
 #include <ke/sdbg.hpp>
 #include <mm/mm.hpp>
-#include <mm/slab.hpp>
 #include <uacpi/uacpi.h>
 
 #define YUKI_VERSION_MAJOR 0
