@@ -58,6 +58,12 @@ namespace hal {
     uint64_t retrieveHhdmOffset();
     limine_memmap_response *retrieveMemoryMap();
     uintptr_t retrieveRsdpPhysicalAddress();
+    
+    // Returns the executable image of yuki
+    limine_file *retrieveYukiImage();
+
+    uintptr_t yukiPhysicalAddress();
+    uintptr_t yukiVirtualAddress();
 
     const char *blVersion();
 }

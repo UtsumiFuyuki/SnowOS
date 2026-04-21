@@ -4,6 +4,7 @@ cpp = 'clang++'
 c_ld = 'lld'
 cpp_ld = 'lld'
 strip = 'true'
+nasm = 'nasm'
 
 [built-in options]
 c_args = ['-target', 'x86_64-unknown-windows', '-ffreestanding', '-mno-red-zone', '-mno-mmx', '-mno-sse']

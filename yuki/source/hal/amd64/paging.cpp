@@ -12,19 +12,68 @@ UtsumiFuyuki
 March 20th 2026
 **/
 
+#include <cstdint>
 #include <hal/hal.hpp>
 #include <hal/amd64/paging.hpp>
 #include <ke/string.hpp>
 #include <ke/log.hpp>
 #include <mm/early_alloc.hpp>
+#include <ldr/pe.hpp>
 
 uint64_t *kernelPml4{};
 
 void hal::x64::initializePaging() {
-    uint64_t cr3;
-    __asm__ volatile ("mov %%cr3, %0" : "=a"(cr3));
-
+    uint64_t cr3 = mm::earlyAllocatePage();
+    memset(reinterpret_cast<uint64_t *>(cr3 + hal::retrieveHhdmOffset()), 0, 0x1000);
     kernelPml4 = reinterpret_cast<uint64_t *>(cr3 + hal::retrieveHhdmOffset());
+
+    ke::log(__FILE__, "PML4 is located at 0x%llX\r\n", kernelPml4);
+
+    // Map HHDM
+    limine_memmap_response *memoryMap = hal::retrieveMemoryMap();
+    for (size_t i = 0; i < memoryMap->entry_count; i++) {
+        uint64_t flags = PTE_WRITE;
+        if (memoryMap->entries[i]->type != LIMINE_MEMMAP_BAD_MEMORY &&
+            memoryMap->entries[i]->type != LIMINE_MEMMAP_RESERVED &&
+            memoryMap->entries[i]->type != LIMINE_MEMMAP_ACPI_NVS) {
+
+            if (memoryMap->entries[i]->type == LIMINE_MEMMAP_FRAMEBUFFER)
+                flags |= PTE_PWT;
+            
+            hal::x64::mapPages(memoryMap->entries[i]->base,
+                memoryMap->entries[i]->base + hal::retrieveHhdmOffset(),
+                memoryMap->entries[i]->length,
+                flags);
+        }
+    }
+
+    limine_file *yukiImage = hal::retrieveYukiImage();
+    NT_HEADERS_64 *yukiHeader = ldr::parsePe(reinterpret_cast<uint8_t *>(yukiImage->address));
+
+    hal::x64::mapPage(yukiPhysicalAddress(), yukiVirtualAddress(),
+                        PTE_EXECUTE_DISABLE);
+
+    for (size_t i = 0; i < yukiHeader->peHeader.numberOfSections; i++) {
+        uint64_t flags{PTE_EXECUTE_DISABLE};
+        if (yukiHeader->sectionTable[i].characteristics & IMAGE_SCN_MEM_EXECUTE) {
+                flags = flags & ~PTE_EXECUTE_DISABLE;
+            }
+
+            if (yukiHeader->sectionTable[i].characteristics & IMAGE_SCN_MEM_WRITE) {
+                flags |= PTE_WRITE;
+            }
+
+            uint64_t length = yukiHeader->sectionTable[i].virtualSize;
+            if ((length & 0xFFF) != 0) {
+                length = (length & ~0xFFF) + 0x1000;
+            }
+
+            hal::x64::mapPages(hal::yukiPhysicalAddress() + yukiHeader->sectionTable[i].virtualAddress,
+                                hal::yukiVirtualAddress() + yukiHeader->sectionTable[i].virtualAddress, length, flags);
+        }
+    __asm__ volatile ("mov %0, %%cr3" :: "a"(cr3));
+
+    ke::print("Paging Initialized!\r\n");
 }
 
 void hal::x64::setCr3(uintptr_t pml4) {

@@ -24,6 +24,7 @@ October 28th 2025
 #include <ke/string.hpp>
 #include <ke/log.hpp>
 #include <ke/spinlock.hpp>
+#include <mm/mm.hpp>
 
 // Limine Stuff
 
@@ -70,6 +71,18 @@ namespace {
 
     volatile limine_rsdp_request limineRsdpRequest = {
         .id = LIMINE_RSDP_REQUEST_ID,
+        .revision = 0,
+        .response = nullptr
+    };
+
+    volatile limine_executable_file_request limineExecutableRequest = {
+        .id = LIMINE_EXECUTABLE_FILE_REQUEST_ID,
+        .revision = 0,
+        .response = nullptr
+    };
+
+    volatile limine_executable_address_request limineExecutableAddressRequest = {
+        .id = LIMINE_EXECUTABLE_ADDRESS_REQUEST_ID,
         .revision = 0,
         .response = nullptr
     };
@@ -172,6 +185,14 @@ void hal::initialize()
 
 SPINLOCK lock{};
 
+void cpuTest() {
+    ke::print("This is a CPU test! ^w^");
+    ke::print("Allocating a page...\r\n");
+    uintptr_t page = mm::allocatePage();
+    ke::print("Allocated page at 0x%llX\r\n", page);
+    return;
+}
+
 void cpuStart(limine_mp_info *MpInfo)
 {
     bool intsEnabled = ke::spinlockAcquire(&lock);
@@ -181,9 +202,9 @@ void cpuStart(limine_mp_info *MpInfo)
     __asm__ volatile ("lidt %0" :: "m"(idtr));
 
     ke::print("CPU startup complete!\r\n");
-
     ke::spinlockRelease(&lock, intsEnabled);
 
+    cpuTest();
     hal::haltCpu();
 }
 
@@ -274,4 +295,16 @@ limine_memmap_response *hal::retrieveMemoryMap()
 uintptr_t hal::retrieveRsdpPhysicalAddress()
 {
     return reinterpret_cast<uintptr_t>(limineRsdpRequest.response->address) - hal::retrieveHhdmOffset();
+}
+
+limine_file *hal::retrieveYukiImage() {
+    return limineExecutableRequest.response->executable_file;
+}
+
+uintptr_t hal::yukiPhysicalAddress() {
+    return limineExecutableAddressRequest.response->physical_base;
+}
+
+uintptr_t hal::yukiVirtualAddress() {
+    return limineExecutableAddressRequest.response->virtual_base;
 }
