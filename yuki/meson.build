@@ -28,6 +28,7 @@ sources = files(
     'source/mm/physical.cpp',
     'source/mm/vmem.cpp',
     'source/mm/vm.cpp',
+    'source/mm/slab.cpp',
     'source/ldr/pe.cpp'
 )
 

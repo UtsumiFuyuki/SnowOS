@@ -22,7 +22,7 @@ VMEM_ARENA heapArena{};
 
 void mm::initializeVmm() {
     ke::log(__FILE__, "Initializing Virtual Memory Manager...\r\n");
-    mm::vmemCreateArena(&heapArena, "heapArena", 0xFFFFB00000000000, 0xF0000000, 0x1000, nullptr, nullptr, nullptr);
+    mm::vmemCreateArena(&heapArena, "heapArena", 0xFFFFA00000000000, 0xF000000000000000, 0x1000, nullptr, nullptr, nullptr);
 
     auto *currentNode = heapArena.segmentList.getHead();
 
