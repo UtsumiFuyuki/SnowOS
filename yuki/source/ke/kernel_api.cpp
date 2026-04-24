@@ -1,6 +1,8 @@
 #include <hal/hal.hpp>
+#include <hal/paging.hpp>
 #include <ke/log.hpp>
 #include <mm/early_alloc.hpp>
+#include <mm/mm.hpp>
 #include <uacpi/kernel_api.h>
 
 // Returns the PHYSICAL address of the RSDP structure via *out_rsdp_address.
@@ -37,7 +39,18 @@ uacpi_status uacpi_kernel_get_rsdp(uacpi_phys_addr *out_rsdp_address) {
  *              to uACPI.
  */
 void *uacpi_kernel_map(uacpi_phys_addr addr, uacpi_size len) {
-    //return mm::mapPhysicalAddress(addr, len);
+    uintptr_t alignedAddress = (addr & ~0xFFF);
+    len += (addr - alignedAddress);
+
+    if ((len & 0xFFF) != 0) {
+        len = (len & ~0xFFF) + 0x1000;
+    }
+
+    uintptr_t virtualAddress = mm::allocateKernelVirt(len / 0x1000);
+    ke::log(__FILE__, "Returned virtual address: 0x%llX\r\n", virtualAddress);
+    hal::mapPages(alignedAddress, virtualAddress, len, PAGE_WRITE);
+
+    return reinterpret_cast<void *>(virtualAddress);
 }
 
 /**
@@ -49,7 +62,14 @@ void *uacpi_kernel_map(uacpi_phys_addr addr, uacpi_size len) {
  *       as well as its true length.
  */
 void uacpi_kernel_unmap(void *addr, uacpi_size len) {
-    ke::log(__FILE__, "Uh oh spaghettio! We're bump allocating VAs, can't free it :p\n");
+    uintptr_t alignedAddress = ((uintptr_t)addr & ~0xFFF);
+    len += ((uintptr_t)addr - alignedAddress);
+
+    if ((len & 0xFFF) != 0) {
+        len = (len & ~0xFFF) + 0x1000;
+    }
+    mm::freeKernelVirt(alignedAddress, len / 0x1000);
+    hal::unmapPages(alignedAddress, len);
 }
 
 void uacpi_kernel_log(uacpi_log_level logLevel, const uacpi_char *string) {
