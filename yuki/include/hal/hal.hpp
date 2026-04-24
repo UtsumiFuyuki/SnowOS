@@ -65,6 +65,8 @@ namespace hal {
     uintptr_t yukiPhysicalAddress();
     uintptr_t yukiVirtualAddress();
 
+    limine_module_response *retrieveModules();
+
     const char *blVersion();
 }
 

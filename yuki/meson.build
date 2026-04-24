@@ -15,13 +15,13 @@ sources = files(
     'source/ke/kernel_api.cpp',
     'source/ke/sdbg.cpp',
     'source/hal/hal.cpp',
-    'source/hal/gdt.asm',
-    'source/hal/isr.asm',
     'source/hal/flanterm/src/flanterm.c',
     'source/hal/flanterm/src/flanterm_backends/fb.c',
     'source/hal/paging.cpp',
     'source/hal/serial.cpp',
     'source/hal/amd64/paging.cpp',
+    'source/hal/amd64/gdt.asm',
+    'source/hal/amd64/isr.asm',
     'source/hal/amd64/fred.cpp',
     'source/hal/amd64/fred.asm',
     'source/mm/early_alloc.cpp',
@@ -29,7 +29,8 @@ sources = files(
     'source/mm/vmem.cpp',
     'source/mm/vm.cpp',
     'source/mm/slab.cpp',
-    'source/ldr/pe.cpp'
+    'source/ldr/pe.cpp',
+    'source/io/gz.cpp'
 )
 
 add_project_arguments(
@@ -73,7 +74,6 @@ add_project_link_arguments(
     '-Wl,/nodefaultlib',
     '-Wl,/kernel',
     '-Wl,/verbose',
-    '-Wl,/debug',
     '-static',
 
     language: ['cpp', 'c']

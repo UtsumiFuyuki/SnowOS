@@ -75,6 +75,6 @@ uint64_t strlen(const char *string) {
         size_t length{};
         for (size_t i = 0; string[i] != '\0'; i++) {
             length++;
-        } length++;
+        }
         return length;
     }

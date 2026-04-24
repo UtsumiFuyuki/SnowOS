@@ -74,7 +74,7 @@ keInterruptDispatch:
     iretq
 
 ISR_NOERR  0 ; (#DE) Divison Error
-ISR_NOERR  1 ; (#)
+ISR_NOERR  1 ; (#DB) 
 ISR_NOERR  2 ; (#)
 ISR_NOERR  3 ; (#)
 ISR_NOERR  4 ; (#)

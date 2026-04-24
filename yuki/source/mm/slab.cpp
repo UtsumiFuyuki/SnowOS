@@ -22,6 +22,8 @@ April 15th, 2026
 
 #define SLAB_SMALL_MAX_SIZE 512
 
+bool slabInitialized{false};
+
 // We currently only cache object sizes, I'll implement proper
 // object caching... at some point
 uint64_t cacheCount{}; // Number of caches
@@ -52,6 +54,8 @@ void mm::initializeSlab() {
 
         ke::log(__FILE__, "Created cache for %llu sized objects!\r\n", n);
     }
+
+    slabInitialized = true;
     ke::print("Slab allocator initialized!\r\n");
 }
 
@@ -193,6 +197,17 @@ void *mm::allocatePool(size_t numberOfBytes) {
         }
     }
     ke::log(__FILE__, "Cache of size %llu does not exist! Creating new one...\r\n", numberOfBytes);
+
+    if (numberOfBytes > 512) {
+        // just supply some pages
+        numberOfBytes = (numberOfBytes / 0x1000) + 1;
+
+        ke::log(__FILE__, "Pages to supply: %llu\r\n", numberOfBytes);
+
+        address = mm::allocateKernelPages(numberOfBytes);
+        return address;
+    }
+
     if (createCache(numberOfBytes) != nullptr) {
         ke::log(__FILE__, "New cache created at 0x%llX with size %llu!\r\n", &caches[cacheCount - 1], caches[cacheCount - 1].cacheSize);
         auto *slab = caches[cacheCount - 1].freelist;

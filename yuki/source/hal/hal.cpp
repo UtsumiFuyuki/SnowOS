@@ -86,6 +86,15 @@ namespace {
         .revision = 0,
         .response = nullptr
     };
+
+    volatile limine_module_request limineModuleRequest = {
+        .id = LIMINE_MODULE_REQUEST_ID,
+        .revision = 0,
+        .response = nullptr,
+
+        .internal_module_count = 0,
+        .internal_modules = nullptr
+    };
 }
 
 namespace {
@@ -307,4 +316,8 @@ uintptr_t hal::yukiPhysicalAddress() {
 
 uintptr_t hal::yukiVirtualAddress() {
     return limineExecutableAddressRequest.response->virtual_base;
+}
+
+limine_module_response *hal::retrieveModules() {
+    return limineModuleRequest.response;
 }

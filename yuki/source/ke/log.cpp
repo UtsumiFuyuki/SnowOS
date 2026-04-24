@@ -18,6 +18,7 @@ October 30th 2025
 #include <hal/hal.hpp>
 #include <hal/serial.hpp>
 #include <ke/log.hpp>
+#include <ke/spinlock.hpp>
 
 #define NANOPRINTF_USE_FIELD_WIDTH_FORMAT_SPECIFIERS 1
 #define NANOPRINTF_USE_PRECISION_FORMAT_SPECIFIERS 0
@@ -33,6 +34,8 @@ October 30th 2025
 
 char buffer[512];
 char loggerBuffer[512];
+
+SPINLOCK logLock{};
 
 void ke::log(const char *file, const char *string, ...) {
     va_list arguments;
@@ -51,6 +54,7 @@ void ke::log(const char *file, const char *string, ...) {
 }
 
 void ke::print(const char *string, ...) {
+    bool ints = ke::spinlockAcquire(&logLock);
     va_list arguments;
     va_start(arguments, string);
 
@@ -59,4 +63,5 @@ void ke::print(const char *string, ...) {
 
     va_end(arguments);
     memset(buffer, 0, sizeof(buffer));
+    ke::spinlockRelease(&logLock, ints);
 }

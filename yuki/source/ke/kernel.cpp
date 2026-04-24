@@ -23,6 +23,7 @@ October 28th 2025
 #include <ke/sdbg.hpp>
 #include <mm/mm.hpp>
 #include <mm/slab.hpp>
+#include <io/gz.hpp>
 #include <uacpi/uacpi.h>
 
 #define YUKI_VERSION_MAJOR 0
@@ -44,6 +45,8 @@ extern "C" void keRunConstructors() {
 		(*p)();
 	}
 }
+
+char tempBuffer[0x1000];
 
 extern "C" void keMain(void *snowbootInfo) {
     keRunConstructors();
@@ -78,31 +81,7 @@ extern "C" void keMain(void *snowbootInfo) {
     mm::initializeVmm();
     mm::initializeSlab();
 
-    uint64_t *test = new uint64_t;
-    ke::log(__FILE__, "Test 0x%llX\r\n", test);
-    uint64_t *test2 = new uint64_t;
-    ke::log(__FILE__, "Test2 0x%llX\r\n", test2);
-    uint64_t *test3 = new uint64_t;
-    ke::log(__FILE__, "Test3 0x%llX\r\n", test3);
-
-    LL_NODE<uint64_t> *test4 = new LL_NODE<uint64_t>;
-    ke::log(__FILE__, "Test3 0x%llX\r\n", test4);
-
-
-    uint64_t *test5 = new uint64_t;
-    ke::log(__FILE__, "Test3 0x%llX\r\n", test5);
-
-    for (size_t i = 0; i < 1000; i++) {
-        auto *test = new uint64_t;
-    }
-
-    mm::displayList(0);
-    for (size_t i = 0; i < 254; i++) {
-        mm::freePool(test + i);
-    }
-    mm::displayList(0);
-
-    char *c = new char;
+    uacpi_setup_early_table_access(tempBuffer, 0x1000);
 
     keBeginDebugSession();
 
