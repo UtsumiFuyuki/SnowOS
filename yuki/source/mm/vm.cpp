@@ -50,3 +50,11 @@ void *mm::allocateKernelPages(size_t pages) {
 
     return reinterpret_cast<void *>(virtualAddress);
 }
+
+uintptr_t mm::allocateKernelVirt(size_t pages) {
+    return mm::vmemAllocate(&heapArena, pages * 0x1000);
+}
+
+void mm::freeKernelVirt(uintptr_t address, size_t pages) {
+    mm::vmemFree(&heapArena, address, pages * 0x1000);
+}
