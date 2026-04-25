@@ -77,4 +77,12 @@ uint64_t strlen(const char *string) {
             length++;
         }
         return length;
+}
+
+int strncmp(const char* str1, const char *str2, size_t length) {
+    for (size_t i = 0; i < length; i++) {
+        if (str1[i] != str2[i])
+            return 1;
     }
+    return 0;
+}

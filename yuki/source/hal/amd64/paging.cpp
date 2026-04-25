@@ -34,8 +34,7 @@ void hal::x64::initializePaging() {
     for (size_t i = 0; i < memoryMap->entry_count; i++) {
         uint64_t flags = PTE_WRITE;
         if (memoryMap->entries[i]->type != LIMINE_MEMMAP_BAD_MEMORY &&
-            memoryMap->entries[i]->type != LIMINE_MEMMAP_RESERVED &&
-            memoryMap->entries[i]->type != LIMINE_MEMMAP_ACPI_NVS) {
+            memoryMap->entries[i]->type != LIMINE_MEMMAP_RESERVED) {
 
             if (memoryMap->entries[i]->type == LIMINE_MEMMAP_FRAMEBUFFER)
                 flags |= PTE_PWT;

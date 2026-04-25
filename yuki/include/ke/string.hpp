@@ -23,3 +23,4 @@ extern "C" void *memset(void *s, int c, uint64_t n);
 extern "C" void *memmove(void *dest, const void *src, uint64_t n);
 extern "C" int memcmp(const void *s1, const void *s2, uint64_t n);
 uint64_t strlen(const char *string);
+int strncmp(const char* str1, const char *str2, size_t length);

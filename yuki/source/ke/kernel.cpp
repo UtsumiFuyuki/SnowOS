@@ -17,6 +17,7 @@ October 28th 2025
 #include <hal/hal.hpp>
 #include <hal/paging.hpp>
 #include <hal/serial.hpp>
+#include <hal/acpi_tables.hpp>
 #include <hal/amd64/cpuid.hpp>
 #include <ke/log.hpp>
 #include <ke/string.hpp>
@@ -80,8 +81,7 @@ extern "C" void keMain(void *snowbootInfo) {
     mm::initialize();
     mm::initializeVmm();
     mm::initializeSlab();
-
-    uacpi_setup_early_table_access(tempBuffer, 0x1000);
+    hal::setupAcpiTables();
 
     keBeginDebugSession();
 

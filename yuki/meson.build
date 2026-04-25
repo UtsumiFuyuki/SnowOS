@@ -19,6 +19,7 @@ sources = files(
     'source/hal/flanterm/src/flanterm_backends/fb.c',
     'source/hal/paging.cpp',
     'source/hal/serial.cpp',
+    'source/hal/acpi_tables.cpp',
     'source/hal/amd64/paging.cpp',
     'source/hal/amd64/gdt.asm',
     'source/hal/amd64/isr.asm',
