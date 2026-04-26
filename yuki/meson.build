@@ -26,6 +26,7 @@ sources = files(
     'source/hal/amd64/fred.cpp',
     'source/hal/amd64/fred.asm',
     'source/hal/amd64/timers/hpet.cpp',
+    'source/hal/amd64/apic/apic.cpp',
     'source/mm/early_alloc.cpp',
     'source/mm/physical.cpp',
     'source/mm/vmem.cpp',

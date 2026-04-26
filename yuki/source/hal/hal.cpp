@@ -251,10 +251,15 @@ void hal::initCpu()
         idtr.base = (uintptr_t)&idt;
         idtr.limit = (uint16_t)sizeof(IDT_ENTRY) * 256 - 1;
 
-        for(int i = 0; i < 40; i++)
+        // Exceptions
+        for(int i = 0; i < 32; i++)
         {
             halIdtSetDescriptor(i, isrStubTable[i], 0x8e);
         }
+
+        // Timer Int
+        halIdtSetDescriptor(47, isrStubTable[32], 0x8e);
+        halIdtSetDescriptor(48, isrStubTable[33], 0x8e);
 
         __asm__ volatile ("lidt %0" :: "m"(idtr));
     }

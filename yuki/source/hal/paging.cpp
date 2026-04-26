@@ -43,6 +43,18 @@ uint64_t hal::generalFlagsToArchSpecific(uint64_t flags) {
         #endif
     }
 
+    if (flags & PAGE_CACHE_DISABLE) {
+        #if defined (__x86_64__)
+            ArchFlags |= PTE_PCD;
+        #endif
+    }
+
+    if (flags & PAGE_WRITE_THROUGH) {
+        #if defined (__x86_64__)
+            ArchFlags |= PTE_PWT;
+        #endif
+    }
+
     return ArchFlags;
 }
 

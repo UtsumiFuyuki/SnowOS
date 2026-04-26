@@ -20,6 +20,7 @@ October 28th 2025
 #include <hal/acpi_tables.hpp>
 #include <hal/amd64/cpuid.hpp>
 #include <hal/amd64/timers/hpet.hpp>
+#include <hal/amd64/apic/apic.hpp>
 #include <ke/log.hpp>
 #include <ke/string.hpp>
 #include <ke/sdbg.hpp>
@@ -85,9 +86,8 @@ extern "C" void keMain(void *snowbootInfo) {
     mm::initializeSlab();
     hal::setupAcpiTables();
     hal::x64::enableHpet();
-
-    keBeginDebugSession();
+    hal::x64::enableLapic();
 
     // We're done, just hang...
-    hal::haltCpu();
+    for(;;);
 }

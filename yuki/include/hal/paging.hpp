@@ -5,6 +5,8 @@
 #define PAGE_WRITE 0x1
 #define PAGE_USER 0x2
 #define PAGE_NO_EXECUTE 0x4
+#define PAGE_CACHE_DISABLE 0x8
+#define PAGE_WRITE_THROUGH 0x10
 
 namespace hal {
     void initializePaging();

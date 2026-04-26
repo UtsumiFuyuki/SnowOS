@@ -17,7 +17,11 @@ October 29th 2025
 #include <cstdint>
 #include <hal/hal.hpp>
 #include <hal/amd64/interrupts.hpp>
+#include <hal/amd64/apic/apic.hpp>
 #include <ke/log.hpp>
+#include <utils/mmio.hpp>
+
+extern "C" uintptr_t apicMmioBase;
 
 extern "C" [[noreturn]] void keInterruptHandler(INTERRUPT_REGISTERS* savedRegisters,
                                                             CPU_STACK_FRAME *cpuSavedRegisters,
@@ -89,4 +93,16 @@ extern "C" [[noreturn]] void keInterruptHandler(INTERRUPT_REGISTERS* savedRegist
     savedRegisters->r15);
     
     hal::haltCpu();
+}
+
+extern "C" void keTimerHandler() {
+    mmioWrite32(reinterpret_cast<uint64_t *>(apicMmioBase + LAPIC_EOI_REG), 0);
+    __asm__ volatile("sti");
+    ke::print("tick\r\n");
+    return;
+}
+
+extern "C" void keIrqHandler() {
+    ke::print("IRQ Recieved!\r\n");
+    return;
 }

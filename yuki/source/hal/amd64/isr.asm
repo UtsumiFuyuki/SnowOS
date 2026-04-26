@@ -14,6 +14,8 @@
 ;
 
 extern keInterruptHandler
+extern keTimerHandler
+extern keIrqHandler
 
 %macro ISR_ERR 1
 ISR_STUB_%+%1:
@@ -26,6 +28,18 @@ ISR_STUB_%+%1:
     push 0x0
     push %1
     jmp keInterruptDispatch
+%endmacro
+
+%macro TIMER 1
+TIMER_STUB_%+%1:
+    jmp keTimerHandler
+    iretq
+%endmacro
+
+%macro IRQ 1
+IRQ_STUB_%+%1:
+    jmp keIrqHandler
+    iretq
 %endmacro
 
 keInterruptDispatch:
@@ -106,6 +120,9 @@ ISR_NOERR  29 ; (#)
 ISR_ERR    30 ; (#)
 ISR_NOERR  31 ; (#)
 
+TIMER 32
+IRQ 33
+
 global isrStubTable
 
 section .text
@@ -116,3 +133,4 @@ isrStubTable:
     dq ISR_STUB_%+i
 %assign i i+1 
 %endrep
+dq TIMER_STUB_%+i
