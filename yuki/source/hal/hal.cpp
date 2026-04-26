@@ -111,7 +111,10 @@ uint32_t terminalForeground = 0xFFFFFF;
 uint32_t terminalBackground = 0x0000AD;
 
 extern "C" void ReloadSegments();
+extern "C" void loadTss(uint32_t);
 extern "C" void *isrStubTable[];
+
+TSS tss;
 
 GDT gdt {0, KERNEL_CS, KERNEL_DS, USER_CS, USER_DS};
 DTR gdtr;
@@ -236,11 +239,23 @@ void hal::haltCpu()
 void hal::initCpu()
 {
     // Setup the GDT
+    uint32_t tssLimit = sizeof(TSS);
+    uint64_t tssBase = reinterpret_cast<uint64_t>(&tss);
+
+    gdt.tssDescriptor.limit1 = static_cast<uint16_t>(tssLimit & 0xFFFF);
+    gdt.tssDescriptor.base1 = static_cast<uint16_t>(tssBase & 0xFFFF);
+    gdt.tssDescriptor.base2 = static_cast<uint16_t>((tssBase >> 16) & 0xFFFF);
+    gdt.tssDescriptor.accessByte = 0x89;
+    gdt.tssDescriptor.flags = (tssLimit >> 16) & 0xF;
+    gdt.tssDescriptor.base3 = static_cast<uint8_t>(tssBase >> 24);
+    gdt.tssDescriptor.base4 = static_cast<uint32_t>(tssBase >> 32);
+
     gdtr.base = reinterpret_cast<uintptr_t>(&gdt);
     gdtr.limit = (sizeof(gdt) - 1);
 
     __asm__ volatile ("lgdt %0" :: "m"(gdtr));
     ReloadSegments();
+    loadTss(0x28);
 
     CPUID_REGISTERS cpuid = hal::x64::getCpuid(7, 1);
     uint8_t fredBit = (cpuid.rax >> 17) & 0x1;
@@ -269,6 +284,10 @@ void hal::initCpu()
     }
 
     ke::print("CPU Initialized!\r\n");
+}
+
+void hal::setRsp0(uintptr_t rsp0) {
+    tss.rsp0 = rsp0;
 }
 
 void hal::initSmp()

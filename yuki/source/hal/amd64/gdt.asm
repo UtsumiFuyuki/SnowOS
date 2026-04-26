@@ -30,3 +30,8 @@ ReloadSegments:
     mov gs, ax
     mov ss, ax
     ret
+
+global loadTss
+loadTss:
+    ltr ecx
+    ret

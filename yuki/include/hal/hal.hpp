@@ -15,6 +15,7 @@ October 28th 2025
 
 #pragma once
 
+#include <cstdint>
 #include <limine.h>
 
 #define KERNEL_CS 0x00af9b000000ffff
@@ -28,12 +29,36 @@ typedef struct _DTR {
     uint64_t base;
 } __attribute__((packed)) DTR; // Descriptor Table Register
 
+typedef struct _TSS {
+    uint32_t reserved0;
+    uint64_t rsp0;
+    uint64_t rsp1;
+    uint64_t rsp2;
+    uint64_t reserved1;
+    uint64_t ist[7];
+    uint64_t reserved2;
+    uint16_t reserved3;
+    uint16_t iopb;
+} __attribute__((packed)) TSS;
+
+typedef struct _TSS_DESC {
+    uint16_t limit1;
+    uint16_t base1;
+    uint8_t base2;
+    uint8_t accessByte;
+    uint8_t flags;
+    uint8_t base3;
+    uint32_t base4;
+    uint32_t reserved;
+} __attribute__((packed)) TSS_DESC;
+
 typedef struct _GDT {
     uint64_t nullSegment;
     uint64_t kernelCode;
     uint64_t kernelData;
     uint64_t userCode;
     uint64_t userData;
+    TSS_DESC tssDescriptor;
 } __attribute__((packed)) GDT;
 
 typedef struct _IDT_ENTRY {
@@ -51,6 +76,8 @@ namespace hal {
     void printString(const char *String);
     void haltCpu();
     void initCpu();
+
+    void setRsp0(uintptr_t rsp0);
 
     // Starts up the other CPUs in the system
     void initSmp();
