@@ -19,6 +19,7 @@ October 28th 2025
 #include <hal/serial.hpp>
 #include <hal/acpi_tables.hpp>
 #include <hal/amd64/cpuid.hpp>
+#include <hal/amd64/timers/hpet.hpp>
 #include <ke/log.hpp>
 #include <ke/string.hpp>
 #include <ke/sdbg.hpp>
@@ -26,6 +27,7 @@ October 28th 2025
 #include <mm/slab.hpp>
 #include <io/gz.hpp>
 #include <uacpi/uacpi.h>
+#include <utils/math.hpp>
 
 #define YUKI_VERSION_MAJOR 0
 #define YUKI_VERSION_MINOR 1
@@ -82,6 +84,7 @@ extern "C" void keMain(void *snowbootInfo) {
     mm::initializeVmm();
     mm::initializeSlab();
     hal::setupAcpiTables();
+    hal::x64::enableHpet();
 
     keBeginDebugSession();
 

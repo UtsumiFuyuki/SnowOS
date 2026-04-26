@@ -58,4 +58,4 @@ namespace hal {
     bool setupAcpiTables();
     uint8_t retrieveAcpiVersion();
     void *acpiFindTable(const char *signature);
-};
+}
