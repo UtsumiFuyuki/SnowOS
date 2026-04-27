@@ -32,7 +32,7 @@ PROCESS *ke::createProcess(void (*entry)(void *)) {
 
     proc->mainThread.rip = reinterpret_cast<uint64_t>(entry);
     proc->mainThread.rsp = reinterpret_cast<uint64_t>(mm::allocateUserPages(8)) + 0x8000;
-    proc->mainThread.kstack = reinterpret_cast<uint64_t>(mm::allocateKernelPages(4));
+    proc->mainThread.kstack = reinterpret_cast<uint64_t>(mm::allocateKernelPages(4)) + 0x4000;
     proc->mainThread.cr3 = reinterpret_cast<uint64_t>(mm::allocatePage());
     proc->mainThread.tid = tids;
     tids++;
