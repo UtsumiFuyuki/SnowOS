@@ -116,7 +116,7 @@ extern "C" void *isrStubTable[];
 
 TSS tss;
 
-GDT gdt {0, KERNEL_CS, KERNEL_DS, USER_CS, USER_DS};
+GDT gdt {0, KERNEL_CS, KERNEL_DS, USER_DS, USER_CS};
 DTR gdtr;
 
 IDT_ENTRY idt[256];

@@ -107,6 +107,12 @@ extern "C" void keMain(void *snowbootInfo) {
     PROCESS *aomi = ke::createProcess(entryFunc);
 
     cpuLocal.currentThread = &aomi->mainThread;
+    cpuLocal.scratchSpace = mm::allocateKernelPages(1);
+    cpuLocal.cpuId = 0;
+
+    ke::log(__FILE__, "Address of userspace stack: 0x%llX\r\n", aomi->mainThread.rsp);
+    ke::log(__FILE__, "Address of kernelspace stack: 0x%llX\r\n", aomi->mainThread.kstack);
+
     switchToUser(aomi->mainThread.rip, aomi->mainThread.rsp);
 
     //entryFunc();

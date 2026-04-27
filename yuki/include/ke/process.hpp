@@ -15,6 +15,7 @@ April 26th 2026
 #pragma once
 
 #include <cstdint>
+#include <cstddef>
 
 typedef struct _THREAD {
     uint64_t rax;
@@ -46,6 +47,8 @@ typedef struct _PROCESS {
     uint64_t pid;
     THREAD mainThread;
 } PROCESS;
+
+static_assert(offsetof(PROCESS, mainThread) == 8, "Offset of mainThread in PROCESS is incorrect!");
 
 namespace ke {
     PROCESS *createProcess(void (*entry)(void *));

@@ -28,8 +28,9 @@ void hal::x64::initSyscall() {
 
     uint64_t lstar = reinterpret_cast<uint64_t>(syscallHandler);
     wrmsr(IA32_LSTAR, lstar);
-    uint64_t star = (static_cast<uint64_t>(0x18 | 3) << 48) | (static_cast<uint64_t>(0x08) << 32);
+    uint64_t star = (static_cast<uint64_t>(0x10 | 3) << 48) | (static_cast<uint64_t>(0x08) << 32);
     wrmsr(IA32_STAR, star);
+    ke::log(__FILE__, "STAR: 0x%llX\r\n", rdmsr(IA32_STAR));
 
     ke::print("Initialized syscalls!\r\n");
 }

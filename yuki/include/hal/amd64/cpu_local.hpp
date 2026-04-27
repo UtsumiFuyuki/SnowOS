@@ -20,6 +20,7 @@ April 27th 2026
 typedef struct _CPU_LOCAL {
     uint64_t cpuId;
     THREAD *currentThread;
+    void *scratchSpace;
 } CPU_LOCAL;
 
 namespace hal {

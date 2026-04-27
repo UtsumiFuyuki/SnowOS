@@ -56,8 +56,8 @@ typedef struct _GDT {
     uint64_t nullSegment;
     uint64_t kernelCode;
     uint64_t kernelData;
-    uint64_t userCode;
     uint64_t userData;
+    uint64_t userCode;
     TSS_DESC tssDescriptor;
 } __attribute__((packed)) GDT;
 

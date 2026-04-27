@@ -7,6 +7,12 @@ section .text
 syscallHandler:
     swapgs
 
+    mov [gs:0x10], r15
+    mov r15, [gs:0x08]
+    mov [r15 + 120], rsp
+    mov rsp, [r15 + 152]
+    mov r15, [gs:0x10]
+
     push r15
     push r14
     push r13
@@ -42,6 +48,12 @@ syscallHandler:
     pop r13
     pop r14
     pop r15
+
+    mov [gs:0x10], r15
+    mov r15, [gs:0x08]
+    mov [r15 + 152], rsp
+    mov rsp, [r15 + 120]
+    mov r15, [gs:0x10]
 
     swapgs
 
