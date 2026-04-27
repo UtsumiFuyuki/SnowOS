@@ -13,6 +13,7 @@ UtsumiFuyuki
 October 28th 2025
 **/
 
+#include "yk/syscall.hpp"
 #include <cstdint>
 #include <hal/hal.hpp>
 #include <hal/paging.hpp>
@@ -94,14 +95,10 @@ extern "C" void keMain(void *snowbootInfo) {
     hal::x64::enableHpet();
     //hal::x64::enableLapic();
     hal::x64::setCpuLocal(&cpuLocal);
-    hal::x64::initSyscall();
+    ke::initializeSyscalls();
 
     limine_module_response *modules = hal::retrieveModules();
-    ke::print("Number of modules: %llu\r\n", modules->module_count);
-
     void *entry = ldr::loadPe(reinterpret_cast<uint8_t *>(modules->modules[0]->address));
-
-    ke::print("Entry: 0x%llX\r\n", entry);
 
     void (*entryFunc)(void*) = reinterpret_cast<void(*)(void*)>(entry);
     PROCESS *aomi = ke::createProcess(entryFunc);
@@ -110,12 +107,7 @@ extern "C" void keMain(void *snowbootInfo) {
     cpuLocal.scratchSpace = mm::allocateKernelPages(1);
     cpuLocal.cpuId = 0;
 
-    ke::log(__FILE__, "Address of userspace stack: 0x%llX\r\n", aomi->mainThread.rsp);
-    ke::log(__FILE__, "Address of kernelspace stack: 0x%llX\r\n", aomi->mainThread.kstack);
-
     switchToUser(aomi->mainThread.rip, aomi->mainThread.rsp);
-
-    //entryFunc();
 
     // We're done, just hang...
     for(;;);

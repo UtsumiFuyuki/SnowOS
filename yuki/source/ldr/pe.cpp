@@ -52,10 +52,6 @@ void *ldr::loadPe(uint8_t *buffer) {
     void *image = mm::allocateUserPages(header->optionalHeaders.sizeOfImage / 0x1000);
 
     for (size_t i = 0; i < header->peHeader.numberOfSections; i++) {
-        for (size_t k = 0; k < 8; k++) {
-            ke::print("%c", header->sectionTable[i].name[k]);
-        } ke::print("\r\n");
-
         ke::log(__FILE__, "raw data: 0x%llX\r\n", (header->sectionTable[i].pointerToRawData));
         ke::log(__FILE__, "virtual size: 0x%llX\r\n", (header->sectionTable[i].virtualSize));
 

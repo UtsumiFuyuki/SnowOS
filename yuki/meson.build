@@ -37,7 +37,8 @@ sources = files(
     'source/mm/vm.cpp',
     'source/mm/slab.cpp',
     'source/ldr/pe.cpp',
-    'source/io/gz.cpp'
+    'source/io/gz.cpp',
+    'source/yk/syscall.cpp'
 )
 
 add_project_arguments(

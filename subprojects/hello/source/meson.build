@@ -44,6 +44,7 @@ add_project_link_arguments(
     '-Wl,/base:0x1000',
     '-Wl,/nodefaultlib',
     '-Wl,/verbose',
+    '-Wl,/debug',
     '-static',
 
     language: ['cpp', 'c']

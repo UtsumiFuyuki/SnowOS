@@ -54,4 +54,5 @@ void hal::x64::enableLapic() {
 
     // Enable recieving timer interrupts
     mmioWrite32(reinterpret_cast<uint64_t *>(apicMmioBase + LAPIC_EOI_REG), 0);
+    __asm__ volatile ("sti");
 }

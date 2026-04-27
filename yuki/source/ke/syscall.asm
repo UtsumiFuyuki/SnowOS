@@ -29,6 +29,8 @@ syscallHandler:
     push rbx
     push rax
 
+    mov rcx, rsp
+
     sti
     call keSyscallHandler
     cli

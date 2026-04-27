@@ -1,6 +1,7 @@
 rm -rf iso_root
 mkdir -p iso_root
 cp -v build/yuki/yuki.exe iso_root/
+cp -v build/subprojects/hello/source/hello.exe iso_root/
 mkdir -p iso_root/limine
 cp -v yuki/limine.conf iso_root/limine/
 mkdir -p iso_root/EFI/BOOT
