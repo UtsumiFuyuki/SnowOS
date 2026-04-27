@@ -14,6 +14,9 @@ sources = files(
     'source/ke/log.cpp',
     'source/ke/kernel_api.cpp',
     'source/ke/sdbg.cpp',
+    'source/ke/process.cpp',
+    'source/ke/syscall.cpp',
+    'source/ke/syscall.asm',
     'source/hal/hal.cpp',
     'source/hal/flanterm/src/flanterm.c',
     'source/hal/flanterm/src/flanterm_backends/fb.c',
@@ -25,6 +28,7 @@ sources = files(
     'source/hal/amd64/isr.asm',
     'source/hal/amd64/fred.cpp',
     'source/hal/amd64/fred.asm',
+    'source/hal/amd64/syscall.cpp',
     'source/hal/amd64/timers/hpet.cpp',
     'source/hal/amd64/apic/apic.cpp',
     'source/mm/early_alloc.cpp',
@@ -83,6 +87,7 @@ add_project_link_arguments(
 )
 
 uacpi = subproject('uacpi')
+hello_test = subproject('hello')
 
 uacpi_sources = uacpi.get_variable('sources')
 sources += uacpi_sources

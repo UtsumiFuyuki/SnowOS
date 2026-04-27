@@ -86,8 +86,8 @@ PAGE_TABLE_ENTRY hal::x64::createNewEntry(uint64_t flags) {
     return (pageTable | PTE_PRESENT | flags);
 }
 
-void hal::x64::mapPage(uintptr_t physicalAddress, uintptr_t virtualAddress, uint64_t flags) {
-    uint64_t *level = kernelPml4;
+void hal::x64::mapPage(uintptr_t physicalAddress, uintptr_t virtualAddress, uint64_t flags, uint64_t *pagemap) {
+    uint64_t *level = pagemap;
 
     if ((physicalAddress & 0xFFF) != 0 || (virtualAddress & 0xFFF) != 0) {
         ke::log(__FILE__, "PA 0x%llX or VA 0x%llX is not page-aligned!\r\n", physicalAddress, virtualAddress);
@@ -111,18 +111,18 @@ void hal::x64::mapPage(uintptr_t physicalAddress, uintptr_t virtualAddress, uint
     }
 }
 
-void hal::x64::mapPages(uintptr_t physicalAddress, uintptr_t virtualAddress, uint64_t length, uint64_t flags) {
+void hal::x64::mapPages(uintptr_t physicalAddress, uintptr_t virtualAddress, uint64_t length, uint64_t flags, uint64_t *pagemap) {
     if ((physicalAddress & 0xFFF) != 0 || (virtualAddress & 0xFFF) != 0 || (length & 0xFFF) != 0) {
         ke::log(__FILE__, "PA 0x%llX, VA 0x%llX or Length 0x%llX is not page-aligned!\r\n", physicalAddress, virtualAddress, length);
         return;
     }
 
     for (uint64_t i = 0; i < length; i += 0x1000) {
-        mapPage(physicalAddress + i, virtualAddress + i, flags);
+        mapPage(physicalAddress + i, virtualAddress + i, flags, pagemap);
     }
 }
 
-void hal::x64::unmapPage(uintptr_t virtualAddress) {
+void hal::x64::unmapPage(uintptr_t virtualAddress, uint64_t *pagemap) {
     if ((virtualAddress & 0xFFF) != 0) {
         ke::log(__FILE__, "VA 0x%llX is not page-aligned!\r\n", virtualAddress);
         return;
@@ -133,7 +133,7 @@ void hal::x64::unmapPage(uintptr_t virtualAddress) {
         return;
     }
 
-    uint64_t *level = kernelPml4;
+    uint64_t *level = pagemap;
 
     for (uint64_t i = 39; i >= 12; i -= 9) {
         PAGE_TABLE_ENTRY entry = level[((virtualAddress >> i) & 0x1FF)];
@@ -150,7 +150,7 @@ void hal::x64::unmapPage(uintptr_t virtualAddress) {
     __asm__ volatile ("invlpg (%0)" :: "a"(virtualAddress));
 }
 
-void hal::x64::unmapPages(uintptr_t virtualAddress, uint64_t length)
+void hal::x64::unmapPages(uintptr_t virtualAddress, uint64_t length, uint64_t *pagemap)
 {
     if ((length & 0xFFF) != 0) {
         ke::log(__FILE__, "Length 0x%llX is not page-aligned!\r\n", length);
@@ -158,12 +158,12 @@ void hal::x64::unmapPages(uintptr_t virtualAddress, uint64_t length)
     }
 
     for (uint64_t i = 0; i < length; i += 0x1000) {
-        unmapPage(virtualAddress + i);
+        unmapPage(virtualAddress + i, pagemap);
     }
 }
 
-uintptr_t hal::x64::virtualToPhysical(uintptr_t virtualAddress) {
-    uint64_t *level = kernelPml4;
+uintptr_t hal::x64::virtualToPhysical(uintptr_t virtualAddress, uint64_t *pagemap) {
+    uint64_t *level = pagemap;
 
     for (uint64_t i = 39; i >= 12; i -= 9) {
         PAGE_TABLE_ENTRY entry = level[((virtualAddress >> i) & 0x1FF)];
@@ -177,4 +177,9 @@ uintptr_t hal::x64::virtualToPhysical(uintptr_t virtualAddress) {
         level = reinterpret_cast<uint64_t *>((entry & PT_ADDR) + hal::retrieveHhdmOffset());
     }
     return 0;
+}
+
+
+uint64_t *hal::x64::kernelPagemap() {
+    return kernelPml4;
 }

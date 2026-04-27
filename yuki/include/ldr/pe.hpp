@@ -126,4 +126,5 @@ typedef struct _NT_HEADERS_64
 
 namespace ldr {
     NT_HEADERS_64 *parsePe(uint8_t *buffer);
+    void *loadPe(uint8_t *buffer);
 }

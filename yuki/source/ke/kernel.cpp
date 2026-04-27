@@ -19,14 +19,18 @@ October 28th 2025
 #include <hal/serial.hpp>
 #include <hal/acpi_tables.hpp>
 #include <hal/amd64/cpuid.hpp>
+#include <hal/amd64/cpu_local.hpp>
+#include <hal/amd64/syscall.hpp>
 #include <hal/amd64/timers/hpet.hpp>
 #include <hal/amd64/apic/apic.hpp>
 #include <ke/log.hpp>
 #include <ke/string.hpp>
 #include <ke/sdbg.hpp>
+#include <ke/process.hpp>
 #include <mm/mm.hpp>
 #include <mm/slab.hpp>
 #include <io/gz.hpp>
+#include <ldr/pe.hpp>
 #include <uacpi/uacpi.h>
 #include <utils/math.hpp>
 
@@ -50,7 +54,9 @@ extern "C" void keRunConstructors() {
 	}
 }
 
-char tempBuffer[0x1000];
+CPU_LOCAL cpuLocal;
+
+extern "C" void switchToUser(uint64_t rip, uint64_t rsp);
 
 extern "C" void keMain(void *snowbootInfo) {
     keRunConstructors();
@@ -86,7 +92,24 @@ extern "C" void keMain(void *snowbootInfo) {
     mm::initializeSlab();
     hal::setupAcpiTables();
     hal::x64::enableHpet();
-    hal::x64::enableLapic();
+    //hal::x64::enableLapic();
+    hal::x64::setCpuLocal(&cpuLocal);
+    hal::x64::initSyscall();
+
+    limine_module_response *modules = hal::retrieveModules();
+    ke::print("Number of modules: %llu\r\n", modules->module_count);
+
+    void *entry = ldr::loadPe(reinterpret_cast<uint8_t *>(modules->modules[0]->address));
+
+    ke::print("Entry: 0x%llX\r\n", entry);
+
+    void (*entryFunc)(void*) = reinterpret_cast<void(*)(void*)>(entry);
+    PROCESS *aomi = ke::createProcess(entryFunc);
+
+    cpuLocal.currentThread = &aomi->mainThread;
+    switchToUser(aomi->mainThread.rip, aomi->mainThread.rsp);
+
+    //entryFunc();
 
     // We're done, just hang...
     for(;;);

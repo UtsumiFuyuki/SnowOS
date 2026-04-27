@@ -19,10 +19,12 @@ April 2nd 2026
 
 // Bootstrao Heap Arena
 VMEM_ARENA heapArena{};
+VMEM_ARENA userArena{};
 
 void mm::initializeVmm() {
     ke::log(__FILE__, "Initializing Virtual Memory Manager...\r\n");
     mm::vmemCreateArena(&heapArena, "heapArena", 0xFFFFA00000000000, 0xF000000000000000, 0x1000, nullptr, nullptr, nullptr);
+    mm::vmemCreateArena(&userArena, "userArena", 0x1000, 0xF000000000000000, 0x1000, nullptr, nullptr, nullptr);
 
     auto *currentNode = heapArena.segmentList.getHead();
 
@@ -57,4 +59,27 @@ uintptr_t mm::allocateKernelVirt(size_t pages) {
 
 void mm::freeKernelVirt(uintptr_t address, size_t pages) {
     mm::vmemFree(&heapArena, address, pages * 0x1000);
+}
+
+void *mm::allocateUserPages(size_t pages) {
+    if (pages == 0) {
+        return nullptr;
+    }
+
+    uintptr_t virtualAddress = mm::vmemAllocate(&userArena, pages * 0x1000);
+
+    for (size_t i = 0; i < pages * 0x1000; i += 0x1000) {
+        uintptr_t page = mm::allocatePage();
+        hal::mapPage(page, virtualAddress + i, PAGE_WRITE | PAGE_USER);
+    }
+
+    return reinterpret_cast<void *>(virtualAddress);
+}
+
+uintptr_t mm::allocateUserVirt(size_t pages) {
+    return mm::vmemAllocate(&userArena, pages * 0x1000);
+}
+
+void mm::freeUserVirt(uintptr_t address, size_t pages) {
+    mm::vmemFree(&userArena, address, pages * 0x1000);
 }

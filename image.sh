@@ -10,6 +10,7 @@ sudo cp Limine/BOOTX64.EFI /mnt/EFI/BOOT/
 sudo cp yuki/limine.conf /mnt/EFI/BOOT/
 sudo cp Limine/limine-bios.sys /mnt/EFI/BOOT/
 sudo cp build/yuki/yuki.exe /mnt/
+sudo cp subprojects/hello/build/source/hello.exe /mnt/
 sudo cp initrd.tar.gz /mnt/
 sudo umount /mnt
 sudo losetup -d /dev/loop0

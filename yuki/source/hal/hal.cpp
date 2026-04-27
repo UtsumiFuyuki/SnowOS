@@ -309,6 +309,10 @@ void hal::initSmp()
     }
 }
 
+void hal::setupSyscall() {
+
+}
+
 const char *hal::blVersion()
 {
     return limineBootInfoRequest.response->version;

@@ -27,6 +27,9 @@ April 15th 2026
 #define IA32_STAR 0xC0000081
 #define IA32_LSTAR 0xC0000082
 
+#define IA32_KERNEL_GS_BASE 0xC0000102
+#define IA32_EFER           0xC0000080
+
 #pragma once
 
 #include <cstdint>

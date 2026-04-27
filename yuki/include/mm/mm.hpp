@@ -47,4 +47,9 @@ namespace mm
     void freeKernelPages(uintptr_t address);
     uintptr_t allocateKernelVirt(size_t pages);
     void freeKernelVirt(uintptr_t address, size_t pages);
+
+    void *allocateUserPages(size_t pages);
+    void freeUserPages(uintptr_t address);
+    uintptr_t allocateUserVirt(size_t pages);
+    void freeUserVirt(uintptr_t address, size_t pages);
 }

@@ -20,7 +20,7 @@ March 28th 2026
 #include <ke/string.hpp>
 
 // Statically allocated nodes for bootstrap
-LL_NODE<VMEM_BOUNDARY_TAG> initNodes[64]{};
+LL_NODE<VMEM_BOUNDARY_TAG> initNodes[200]{};
 size_t nextFreeNode{};
 
 uint64_t pow(uint64_t base, uint64_t exponent) {

@@ -82,6 +82,8 @@ namespace hal {
     // Starts up the other CPUs in the system
     void initSmp();
 
+    void setupSyscall();
+
     uint64_t retrieveHhdmOffset();
     limine_memmap_response *retrieveMemoryMap();
     uintptr_t retrieveRsdpPhysicalAddress();

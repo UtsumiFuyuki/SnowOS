@@ -23,15 +23,19 @@
 
 typedef uint64_t PAGE_TABLE_ENTRY;
 
+extern "C" uint64_t *kernelPml4;
+
 namespace hal {
     namespace x64 {
         void initializePaging();
         void setCr3(uintptr_t pml4);
         PAGE_TABLE_ENTRY createNewEntry(uint64_t flags);
-        void mapPage(uintptr_t physicalAddress, uintptr_t virtualAddress, uint64_t flags);
-        void mapPages(uintptr_t physicalAddress, uintptr_t virtualAddress, uint64_t length, uint64_t flags); 
-        void unmapPage(uintptr_t virtualAddress);
-        void unmapPages(uintptr_t virtualAddress, uint64_t length);
-        uintptr_t virtualToPhysical(uint64_t virtualAddress);
+        void mapPage(uintptr_t physicalAddress, uintptr_t virtualAddress, uint64_t flags, uint64_t *pagemap = kernelPml4);
+        void mapPages(uintptr_t physicalAddress, uintptr_t virtualAddress, uint64_t length, uint64_t flags, uint64_t *pagemap = kernelPml4); 
+        void unmapPage(uintptr_t virtualAddress, uint64_t *pagemap = kernelPml4);
+        void unmapPages(uintptr_t virtualAddress, uint64_t length, uint64_t *pagemap = kernelPml4);
+        uintptr_t virtualToPhysical(uint64_t virtualAddress, uint64_t *pagemap = kernelPml4);
+
+        uint64_t *kernelPagemap();
     }
 }
