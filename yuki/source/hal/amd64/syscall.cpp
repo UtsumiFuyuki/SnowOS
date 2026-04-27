@@ -1,6 +1,6 @@
 /**
 Snow Operating System
-Copyright (c) UtsumiFuyuki 2025
+Copyright (c) UtsumiFuyuki 2025, 2026
  
 File: hal/amd64/syscall.cpp
 
@@ -9,7 +9,7 @@ Function for setting up SYSCALL/SYSRET
 
 Author:
 UtsumiFuyuki
-October 28th 2025
+April 27th 2026
 **/
 
 #include <hal/amd64/syscall.hpp>
