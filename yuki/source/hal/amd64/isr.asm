@@ -32,7 +32,7 @@ ISR_STUB_%+%1:
 
 %macro TIMER 1
 TIMER_STUB_%+%1:
-    jmp keTimerHandler
+    call keTimerHandler
     iretq
 %endmacro
 
@@ -64,9 +64,9 @@ keInterruptDispatch:
     mov r8, [rsp + 120]
 
     cld
-    sti
-    call keInterruptHandler
     cli
+    call keInterruptHandler
+    sti
 
     pop rax
     pop rbx

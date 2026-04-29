@@ -22,6 +22,7 @@ October 29th 2025
 #include <utils/mmio.hpp>
 
 extern "C" uintptr_t apicMmioBase;
+extern "C" void keSchedule();
 
 extern "C" [[noreturn]] void keInterruptHandler(INTERRUPT_REGISTERS* savedRegisters,
                                                             CPU_STACK_FRAME *cpuSavedRegisters,
@@ -83,7 +84,7 @@ extern "C" [[noreturn]] void keInterruptHandler(INTERRUPT_REGISTERS* savedRegist
     savedRegisters->rsi,
     savedRegisters->r8);
 
-    ke::print("R9: 0x%llX | R10: 0x%llX | R11: 0x%llX | R12: 0x%llX | R13: 0x%llX | R14: 0x%llX | R15: 0x%llX\r\n",
+    ke::print("R9: 0x%llX | R10: 0x%llX | R11: 0x%llX | R12: 0x%llX | R13: 0x%llX | R14: 0x%llX | R15: 0x%llX\r\n" ANSI_RESET,
     savedRegisters->r9,
     savedRegisters->r10,
     savedRegisters->r11,
@@ -98,7 +99,7 @@ extern "C" [[noreturn]] void keInterruptHandler(INTERRUPT_REGISTERS* savedRegist
 extern "C" void keTimerHandler() {
     mmioWrite32(reinterpret_cast<uint64_t *>(apicMmioBase + LAPIC_EOI_REG), 0);
     __asm__ volatile("sti");
-    ke::print("tick\r\n");
+    keSchedule();
     return;
 }
 

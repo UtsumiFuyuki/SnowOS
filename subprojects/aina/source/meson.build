@@ -50,4 +50,4 @@ add_project_link_arguments(
     language: ['cpp', 'c']
 )
 
-executable('hello.exe', sources, include_directories: [incdirs])
+executable('aina.exe', sources, include_directories: [incdirs])

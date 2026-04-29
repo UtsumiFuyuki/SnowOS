@@ -55,9 +55,10 @@ extern "C" void keRunConstructors() {
 	}
 }
 
-CPU_LOCAL cpuLocal;
+extern "C" CPU_LOCAL cpuLocal{};
 
 extern "C" void switchToUser(uint64_t rip, uint64_t rsp);
+extern "C" void contextLoad(uint64_t rsp);
 
 extern "C" void keMain(void *snowbootInfo) {
     keRunConstructors();
@@ -93,20 +94,26 @@ extern "C" void keMain(void *snowbootInfo) {
     mm::initializeSlab();
     hal::setupAcpiTables();
     hal::x64::enableHpet();
-    //hal::x64::enableLapic();
+    hal::x64::enableLapic();
     hal::x64::setCpuLocal(&cpuLocal);
     ke::initializeSyscalls();
 
     limine_module_response *modules = hal::retrieveModules();
-    void *entry = ldr::loadPe(reinterpret_cast<uint8_t *>(modules->modules[0]->address));
+    void *aomiEntry = ldr::loadPe(reinterpret_cast<uint8_t *>(modules->modules[0]->address));
 
-    void (*entryFunc)(void*) = reinterpret_cast<void(*)(void*)>(entry);
-    PROCESS *aomi = ke::createProcess(entryFunc);
+    void (*aomiEntryFunc)(void*) = reinterpret_cast<void(*)(void*)>(aomiEntry);
+    PROCESS *aomi = ke::createProcess(aomiEntryFunc);
+
+    void *ainaEntry = ldr::loadPe(reinterpret_cast<uint8_t *>(modules->modules[1]->address));
+
+    void (*ainaEntryFunc)(void*) = reinterpret_cast<void(*)(void*)>(ainaEntry);
+    PROCESS *aina = ke::createProcess(ainaEntryFunc);
 
     cpuLocal.currentThread = &aomi->mainThread;
     cpuLocal.scratchSpace = mm::allocateKernelPages(1);
     cpuLocal.cpuId = 0;
 
+    hal::setRsp0(aomi->mainThread.kstack);
     switchToUser(aomi->mainThread.rip, aomi->mainThread.rsp);
 
     // We're done, just hang...

@@ -52,4 +52,5 @@ static_assert(offsetof(PROCESS, mainThread) == 8, "Offset of mainThread in PROCE
 
 namespace ke {
     PROCESS *createProcess(void (*entry)(void *));
+    void addThreadToQueue(THREAD *thread);
 }

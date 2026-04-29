@@ -15,8 +15,11 @@ sources = files(
     'source/ke/kernel_api.cpp',
     'source/ke/sdbg.cpp',
     'source/ke/process.cpp',
+    'source/ke/schedule.cpp',
     'source/ke/syscall.cpp',
     'source/ke/syscall.asm',
+    'source/ke/stack.asm',
+    'source/ke/context_switch.asm',
     'source/hal/hal.cpp',
     'source/hal/flanterm/src/flanterm.c',
     'source/hal/flanterm/src/flanterm_backends/fb.c',
@@ -81,6 +84,7 @@ add_project_link_arguments(
     '-Wl,/base:0xFFFFFFFF80000000',
     '-Wl,/nodefaultlib',
     '-Wl,/kernel',
+    '-Wl,/debug',
     '-Wl,/verbose',
     '-static',
 
@@ -88,7 +92,8 @@ add_project_link_arguments(
 )
 
 uacpi = subproject('uacpi')
-hello_test = subproject('hello')
+aomi_test_program = subproject('aomi')
+aina_test_program = subproject('aina')
 
 uacpi_sources = uacpi.get_variable('sources')
 sources += uacpi_sources

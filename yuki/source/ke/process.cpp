@@ -15,14 +15,25 @@ April 26th 2026
 #include <cstdint>
 #include <hal/hal.hpp>
 #include <hal/paging.hpp>
+#include <ke/log.hpp>
 #include <ke/process.hpp>
 #include <ke/string.hpp>
 #include <mm/mm.hpp>
 #include <mm/slab.hpp>
+#include <utils/list.hpp>
+
+extern "C" CIRCULAR_LIST<THREAD *>queue;
+extern "C" void setupStack(THREAD *);
 
 // Mmm, bump allocating pids
 uint64_t pids{};
 uint64_t tids{};
+
+void ke::addThreadToQueue(THREAD *thread) {
+    auto *node = new LL_NODE<THREAD *>;
+    node->data = thread;
+    queue.push(node);
+}
 
 PROCESS *ke::createProcess(void (*entry)(void *)) {
     auto *proc = new PROCESS;
@@ -38,8 +49,11 @@ PROCESS *ke::createProcess(void (*entry)(void *)) {
     tids++;
 
     hal::mapPages(0x1000, 0x20000, 0x6000, PAGE_USER | PAGE_WRITE, reinterpret_cast<uint64_t *>(proc->mainThread.cr3 + hal::retrieveHhdmOffset()));
-
     memcpy(reinterpret_cast<uint64_t *>(proc->mainThread.cr3 + hal::retrieveHhdmOffset()) + 256, hal::getKernelPagemap() + 256, 2048);
+    ke::addThreadToQueue(&proc->mainThread);
+    ke::log(__FILE__, "RSP: 0x%llX\r\n", proc->mainThread.rsp);
+    setupStack(&proc->mainThread);
+    ke::log(__FILE__, "RSP: 0x%llX\r\n", proc->mainThread.rsp);
 
     return proc;
 }

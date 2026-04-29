@@ -5,6 +5,7 @@ global syscallHandler
 section .text
 
 syscallHandler:
+    cli
     swapgs
 
     mov [gs:0x10], r15
@@ -31,9 +32,7 @@ syscallHandler:
 
     mov rcx, rsp
 
-    sti
     call keSyscallHandler
-    cli
 
     pop rax
     pop rbx

@@ -15,8 +15,8 @@ extern "C" void runConstructors() {
 
 extern "C" void _start() {
     runConstructors();
-	YkWriteToConsole("Hello from userspace!\r\n");
     for (;;) {
-        __asm__ volatile ("mov $0xdeadbeef, %rax");
+        __asm__ volatile ("mov $0xcafebabe, %rax");
+		YkWriteToConsole("aina! :3\r\n");
     }
 }

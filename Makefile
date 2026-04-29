@@ -2,16 +2,18 @@ IMAGE_NAME = SnowOS
 
 OVMFPATH = /usr/share/ovmf/x64/OVMF.4m.fd
 
-QEMUFLAGS = --enable-kvm \
-			-M q35 \
+QEMUFLAGS = -M q35 \
 			-m 1G \
 			-bios $(OVMFPATH)\
-			-serial stdio
+			-serial stdio \
+			-d int \
+			--no-reboot \
+			--no-shutdown
 
 .PHONY: all kernel image iso
 
 all:
-	make image
+	make iso
 
 image: kernel
 	dd if=/dev/zero of=$(IMAGE_NAME).img bs=1048576 count=256
@@ -26,7 +28,8 @@ image: kernel
 	sudo cp yuki/limine.conf /mnt/EFI/BOOT/
 	sudo cp Limine/limine-bios.sys /mnt/EFI/BOOT/
 	sudo cp build/yuki/yuki.exe /mnt/
-	sudo cp build/subprojects/hello/source/hello.exe /mnt/
+	sudo cp build/subprojects/aomi/source/aomi.exe /mnt/
+	sudo cp build/subprojects/aina/source/aina.exe /mnt/
 	sudo cp initrd.tar.gz /mnt/
 	sudo umount /mnt
 	sudo losetup -d /dev/loop0
@@ -36,7 +39,8 @@ iso: kernel
 	rm -rf iso_root
 	mkdir -p iso_root
 	cp -v build/yuki/yuki.exe iso_root/
-	cp -v build/subprojects/hello/source/hello.exe iso_root/
+	cp -v build/subprojects/aomi/source/aomi.exe iso_root/
+	cp -v build/subprojects/aina/source/aina.exe iso_root/
 	mkdir -p iso_root/limine
 	cp -v yuki/limine.conf iso_root/limine/
 	mkdir -p iso_root/EFI/BOOT

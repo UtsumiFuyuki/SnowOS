@@ -139,3 +139,85 @@ class LIST
         LL_NODE<T> *head{nullptr};
         LL_NODE<T> *tail{nullptr};
 };
+
+template <typename T>
+class CIRCULAR_LIST
+{
+    public:
+        void push(T Data)
+        {
+            // TODO: Implement default push
+        }
+
+        // Usable without needing the memory allocator to be started
+        void push(LL_NODE<T> *node)
+        {
+            if (head == nullptr && tail == nullptr)
+            {
+                head = node;
+                tail = head;
+                node->next = head;
+                node->prev = tail;
+            }
+
+            else
+            {
+                node->next = head;
+                node->prev = tail;
+                tail->next = node;
+                tail = node;  
+            }
+            size++;
+        }
+
+        T removeHead()
+        {
+            // TODO: Implement Popping
+        }
+
+        T first()
+        {
+            return head->data;
+        }
+
+        T last()
+        {
+            return tail->data;
+        }
+
+        LL_NODE<T> *getHead()
+        {
+            return head;
+        }
+
+        bool empty()
+        {
+            if (size == 0)
+                return true;
+            return false;
+        }
+
+        void remove(LL_NODE<T> *node)
+        {
+            if (head == node)
+                head = node->next;
+
+            if (tail == node)
+                tail = node->next;
+
+            if (node->prev != nullptr)
+                node->prev->next = node->next;
+
+            if (node->next != nullptr)
+                node->next->prev = node->prev;
+
+            node->next = nullptr;
+            node->prev = nullptr;
+
+            size--;
+        }
+    private:
+        size_t size{0};
+        LL_NODE<T> *head{nullptr};
+        LL_NODE<T> *tail{nullptr};
+};
