@@ -13,7 +13,6 @@ UtsumiFuyuki
 October 28th 2025
 **/
 
-#include "yk/syscall.hpp"
 #include <cstdint>
 #include <hal/hal.hpp>
 #include <hal/paging.hpp>
@@ -25,11 +24,13 @@ October 28th 2025
 #include <hal/amd64/timers/hpet.hpp>
 #include <hal/amd64/apic/apic.hpp>
 #include <ke/log.hpp>
+#include <ke/panic.hpp>
 #include <ke/string.hpp>
 #include <ke/sdbg.hpp>
 #include <ke/process.hpp>
 #include <mm/mm.hpp>
 #include <mm/slab.hpp>
+#include <yk/syscall.hpp>
 #include <io/gz.hpp>
 #include <ldr/pe.hpp>
 #include <uacpi/uacpi.h>

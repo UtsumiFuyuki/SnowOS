@@ -14,4 +14,5 @@ April 18th 2026
 
 #pragma once
 
+// Starts up a kernel debugging session
 extern "C" void keBeginDebugSession();

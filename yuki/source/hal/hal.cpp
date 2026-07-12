@@ -108,7 +108,7 @@ namespace {
 struct flanterm_context* flantermContext;
 
 uint32_t terminalForeground = 0xFFFFFF;
-uint32_t terminalBackground = 0x0000AD;
+uint32_t terminalBackground = 0x23272E;
 
 extern "C" void ReloadSegments();
 extern "C" void loadTss(uint32_t);
@@ -198,10 +198,12 @@ void hal::initialize()
 SPINLOCK lock{};
 
 void cpuTest() {
+    bool ints = ke::spinlockAcquire(&lock);
     ke::print("This is a CPU test! ^w^");
     ke::print("Allocating a page...\r\n");
     uintptr_t page = mm::allocatePage();
     ke::print("Allocated page at 0x%llX\r\n", page);
+    ke::spinlockRelease(&lock, ints);
     return;
 }
 
