@@ -144,29 +144,23 @@ template <typename T>
 class CIRCULAR_LIST
 {
     public:
-        void push(T Data)
-        {
-            // TODO: Implement default push
-        }
-
-        // Usable without needing the memory allocator to be started
         void push(LL_NODE<T> *node)
         {
-            if (head == nullptr && tail == nullptr)
-            {
+            if (head == nullptr && tail == nullptr) {
                 head = node;
                 tail = head;
                 node->next = head;
                 node->prev = tail;
             }
 
-            else
-            {
+            else {
                 node->next = head;
+                head->prev = node;
+                head = node;
                 node->prev = tail;
-                tail->next = node;
-                tail = node;  
+                tail->next = head;
             }
+
             size++;
         }
 
@@ -201,15 +195,21 @@ class CIRCULAR_LIST
         {
             if (head == node)
                 head = node->next;
-
             if (tail == node)
                 tail = node->next;
+            
+            if (size == 1) {
+                head = nullptr;
+                tail = nullptr;
+                size--;
+                return;
+            }
 
-            if (node->prev != nullptr)
-                node->prev->next = node->next;
+            auto *prev_node = node->prev;
+            auto *next_node = node->next;
 
-            if (node->next != nullptr)
-                node->next->prev = node->prev;
+            next_node->prev = prev_node;
+            prev_node->next = next_node;
 
             node->next = nullptr;
             node->prev = nullptr;

@@ -13,47 +13,48 @@ April 26th 2026
 **/
 
 #include <cstdint>
-#include <hal/hal.hpp>
-#include <hal/paging.hpp>
-#include <ke/log.hpp>
 #include <ke/process.hpp>
 #include <ke/string.hpp>
-#include <mm/mm.hpp>
 #include <mm/slab.hpp>
+#include <mm/mm.hpp>
 #include <utils/list.hpp>
 
-extern "C" CIRCULAR_LIST<THREAD *>queue;
-extern "C" void setupStack(THREAD *);
-
-// Mmm, bump allocating pids
-uint64_t pids{};
 uint64_t tids{};
 
+extern "C" CIRCULAR_LIST<THREAD *> queue;
+
+// TODO: Create arch agnositc abstraction for this
+extern "C" void setupStack(THREAD *thread);
+
 void ke::addThreadToQueue(THREAD *thread) {
-    auto *node = new LL_NODE<THREAD *>;
-    node->data = thread;
-    queue.push(node);
+    auto *listNode = reinterpret_cast<LL_NODE<THREAD *>*>(mm::allocatePool(sizeof(LL_NODE<THREAD *>)));
+    listNode->data = thread;
+    queue.push(listNode);
 }
 
-PROCESS *ke::createProcess(void (*entry)(void *)) {
-    auto *proc = new PROCESS;
+THREAD *ke::createThread(void (*entry)(void *), THREAD_TYPE threadType, PROCESS *parent) {
+    auto *thread = reinterpret_cast<THREAD *>(mm::allocatePool(sizeof(THREAD)));
+    memset(thread, 0, sizeof(THREAD));
 
-    proc->pid = pids;
-    pids++;
+    thread->rip = reinterpret_cast<uint64_t>(entry);
+    
+    switch (threadType) {
+        case (THREAD_TYPE::KERNEL):
+            thread->rsp = reinterpret_cast<uint64_t>(mm::allocateKernelPages(8)) + 0x8000;
+            break;
+        case (THREAD_TYPE::USER):
+            thread->rsp = reinterpret_cast<uint64_t>(mm::allocateUserPages(8)) + 0x8000;
+            break;
+    }
+    thread->kstack = reinterpret_cast<uint64_t>(mm::allocateKernelPages(4)) + 0x4000;
 
-    proc->mainThread.rip = reinterpret_cast<uint64_t>(entry);
-    proc->mainThread.rsp = reinterpret_cast<uint64_t>(mm::allocateUserPages(8)) + 0x8000;
-    proc->mainThread.kstack = reinterpret_cast<uint64_t>(mm::allocateKernelPages(4)) + 0x4000;
-    proc->mainThread.cr3 = reinterpret_cast<uint64_t>(mm::allocatePage());
-    proc->mainThread.tid = tids;
+    thread->parentProc = parent;
+    thread->tid = tids;
+
     tids++;
 
-    hal::mapPages(0x1000, 0x20000, 0x6000, PAGE_USER | PAGE_WRITE, reinterpret_cast<uint64_t *>(proc->mainThread.cr3 + hal::retrieveHhdmOffset()));
-    memcpy(reinterpret_cast<uint64_t *>(proc->mainThread.cr3 + hal::retrieveHhdmOffset()) + 256, hal::getKernelPagemap() + 256, 2048);
-    ke::addThreadToQueue(&proc->mainThread);
-    ke::log(__FILE__, "RSP: 0x%llX\r\n", proc->mainThread.rsp);
-    setupStack(&proc->mainThread);
-    ke::log(__FILE__, "RSP: 0x%llX\r\n", proc->mainThread.rsp);
+    setupStack(thread);
+    addThreadToQueue(thread);
 
-    return proc;
+    return thread;
 }

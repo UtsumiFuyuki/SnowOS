@@ -35,6 +35,7 @@ October 28th 2025
 #include <ldr/pe.hpp>
 #include <uacpi/uacpi.h>
 #include <utils/math.hpp>
+#include <utils/list.hpp>
 
 #define YUKI_VERSION_MAJOR 0
 #define YUKI_VERSION_MINOR 1
@@ -58,8 +59,27 @@ extern "C" void keRunConstructors() {
 
 extern "C" CPU_LOCAL cpuLocal{};
 
+extern "C" void enablePreemption();
 extern "C" void switchToUser(uint64_t rip, uint64_t rsp);
 extern "C" void contextLoad(uint64_t rsp);
+
+void idle(void *) {
+    for (;;) {
+        ke::print("Idle thread...\r\n");
+    }
+}
+
+void aomi(void *) {
+    for (;;) {
+        ke::print("yamamori aomi! >w<\r\n");
+    }
+}
+
+void aina(void *) {
+    for (;;) {
+        ke::print("umikawa aina! >w<\r\n");
+    }
+}
 
 extern "C" void keMain(void *snowbootInfo) {
     keRunConstructors();
@@ -99,23 +119,12 @@ extern "C" void keMain(void *snowbootInfo) {
     hal::x64::setCpuLocal(&cpuLocal);
     ke::initializeSyscalls();
 
-    limine_module_response *modules = hal::retrieveModules();
-    void *aomiEntry = ldr::loadPe(reinterpret_cast<uint8_t *>(modules->modules[0]->address));
-
-    void (*aomiEntryFunc)(void*) = reinterpret_cast<void(*)(void*)>(aomiEntry);
-    PROCESS *aomi = ke::createProcess(aomiEntryFunc);
-
-    void *ainaEntry = ldr::loadPe(reinterpret_cast<uint8_t *>(modules->modules[1]->address));
-
-    void (*ainaEntryFunc)(void*) = reinterpret_cast<void(*)(void*)>(ainaEntry);
-    PROCESS *aina = ke::createProcess(ainaEntryFunc);
-
-    cpuLocal.currentThread = &aomi->mainThread;
-    cpuLocal.scratchSpace = mm::allocateKernelPages(1);
-    cpuLocal.cpuId = 0;
-
-    hal::setRsp0(aomi->mainThread.kstack);
-    switchToUser(aomi->mainThread.rip, aomi->mainThread.rsp);
+    THREAD *aomiThread = ke::createThread(aomi, THREAD_TYPE::KERNEL, nullptr);
+    THREAD *ainaThread = ke::createThread(aina, THREAD_TYPE::KERNEL, nullptr);
+    THREAD *idleThread = ke::createThread(idle, THREAD_TYPE::KERNEL, nullptr);
+    hal::setRsp0(idleThread->kstack);
+    enablePreemption();
+    contextLoad(idleThread->rsp);
 
     // We're done, just hang...
     for(;;);

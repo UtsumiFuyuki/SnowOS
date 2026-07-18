@@ -30,7 +30,6 @@ void hal::x64::initSyscall() {
     wrmsr(IA32_LSTAR, lstar);
     uint64_t star = (static_cast<uint64_t>(0x10 | 3) << 48) | (static_cast<uint64_t>(0x08) << 32);
     wrmsr(IA32_STAR, star);
-    ke::log(__FILE__, "STAR: 0x%llX\r\n", rdmsr(IA32_STAR));
 
     ke::print("Initialized syscalls!\r\n");
 }
@@ -39,6 +38,4 @@ void hal::x64::setCpuLocal(CPU_LOCAL *cpuLocal) {
     uint64_t kernelGsBase = rdmsr(IA32_KERNEL_GS_BASE);
     kernelGsBase = reinterpret_cast<uint64_t>(cpuLocal);
     wrmsr(IA32_KERNEL_GS_BASE, kernelGsBase);
-
-    ke::log(__FILE__, "Kernel GS Base now set to: 0x%llX\r\n", rdmsr(IA32_KERNEL_GS_BASE));
 }

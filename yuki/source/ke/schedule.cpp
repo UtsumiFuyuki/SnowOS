@@ -18,35 +18,32 @@ April 28th 2026
 #include <hal/amd64/cpu_local.hpp>
 #include <utils/list.hpp>
 
-extern "C" void contextSwitch(THREAD *oldThread, THREAD *currentThread);
-
 extern "C" CIRCULAR_LIST<THREAD *> queue{};
-extern "C" CPU_LOCAL cpuLocal;
+LL_NODE<THREAD *> *currentThread{};
 
-LL_NODE<THREAD *> *currentThread = queue.getHead();
+extern "C" bool preemption{false};
+
+extern "C" void enablePreemption() {
+    preemption = true;
+}
+
+extern "C" void disablePreemption() {
+    preemption = false;
+}
+
+extern "C" void contextSwitch(THREAD *oldThread, THREAD *newThread);
 
 extern "C" void keSchedule() {
-    if (queue.empty()) {
-        ke::log(__FILE__, "No threads in queue!\r\n");
+    if (queue.empty())
         return;
-    }
-    else {
-        if (currentThread == nullptr) {
-            currentThread = queue.getHead();
-        }
+    else if (currentThread == nullptr)
+        currentThread = queue.getHead();
 
-        LL_NODE<THREAD *> *oldThread = currentThread;
-        currentThread = currentThread->next;
+    LL_NODE<THREAD *> *oldThread = currentThread;
+    currentThread = currentThread->next;
 
-        if (currentThread == oldThread) {
-            ke::log(__FILE__, "currentThread is same as oldThread, returning...\r\n");
-            return;
-        }
-        else {
-            hal::setRsp0(currentThread->data->kstack);
-            cpuLocal.currentThread = currentThread->data;
-            contextSwitch(oldThread->data, currentThread->data);
-        }
+    if (currentThread == oldThread)
         return;
-    }
+
+    contextSwitch(oldThread->data, currentThread->data);
 }

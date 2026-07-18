@@ -12,6 +12,7 @@ sources = files(
     'source/ke/interrupts.cpp',
     'source/ke/string.cpp',
     'source/ke/log.cpp',
+    'source/ke/panic.cpp',
     'source/ke/kernel_api.cpp',
     'source/ke/sdbg.cpp',
     'source/ke/process.cpp',

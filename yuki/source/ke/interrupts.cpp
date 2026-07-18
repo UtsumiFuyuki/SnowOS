@@ -24,6 +24,7 @@ October 29th 2025
 
 extern "C" uintptr_t apicMmioBase;
 extern "C" void keSchedule();
+extern "C" bool preemption;
 
 extern "C" [[noreturn]] void keInterruptHandler(INTERRUPT_REGISTERS* savedRegisters,
                                                             CPU_STACK_FRAME *cpuSavedRegisters,
@@ -33,6 +34,12 @@ extern "C" [[noreturn]] void keInterruptHandler(INTERRUPT_REGISTERS* savedRegist
     intFrame.cpuRegisters = *cpuSavedRegisters;
     intFrame.registers = *savedRegisters;
 
+    // TODO: This is wrong, fix it
+    if (cpuSavedRegisters->rip < 0xFFFF800000000000) {
+        ke::print("Interrupt recieved from userspace! Determining how to handle...\r\n");
+        hal::haltCpu();
+    }
+
     kePanic("Exception occured!", &intFrame);
 
     hal::haltCpu();
@@ -41,7 +48,9 @@ extern "C" [[noreturn]] void keInterruptHandler(INTERRUPT_REGISTERS* savedRegist
 extern "C" void keTimerHandler() {
     mmioWrite32(reinterpret_cast<uint64_t *>(apicMmioBase + LAPIC_EOI_REG), 0);
     __asm__ volatile("sti");
-    keSchedule();
+    
+    if (preemption)
+        keSchedule();
     return;
 }
 
